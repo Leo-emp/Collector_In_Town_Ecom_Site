@@ -1,16 +1,8 @@
-// Root page — redirects to locale-prefixed route
-// Will be replaced by i18n middleware redirect in Task 3
+// Root page — redirects to the default locale (/en)
+// The proxy.ts handles Accept-Language detection for new visitors,
+// but this redirect catches any edge cases where / is hit directly
+import { redirect } from "next/navigation";
+
 export default function RootPage() {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="font-[family-name:var(--font-playfair)] text-5xl text-accent mb-4">
-          Collector In Town
-        </h1>
-        <p className="text-text-secondary text-lg">
-          Premium Diecast Models — Coming Soon
-        </p>
-      </div>
-    </div>
-  );
+  redirect("/en");
 }

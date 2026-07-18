@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
+import { headers } from "next/headers";
 import "./globals.css";
 
 // Inter for body text, Playfair Display for headings — premium typography
@@ -17,13 +18,18 @@ export const metadata: Metadata = {
 };
 
 // Root layout — wraps everything including locale and admin layouts
-export default function RootLayout({
+// Reads x-locale header set by proxy.ts to set the correct html lang attribute
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Read the locale from the proxy header — defaults to "en"
+  const headersList = await headers();
+  const lang = headersList.get("x-locale") || "en";
+
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable} dark`}>
+    <html lang={lang} className={`${inter.variable} ${playfair.variable} dark`}>
       <body className="min-h-screen bg-background text-text-primary font-sans">
         {children}
       </body>
