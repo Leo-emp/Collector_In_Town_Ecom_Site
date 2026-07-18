@@ -15,9 +15,6 @@ const DELIVERY_ZONES = [
   { id: "other", name_en: "Other Regions", name_my: "အခြားဒေသများ", fee: 5000 },
 ];
 
-// Free shipping threshold in MMK
-const FREE_SHIPPING_THRESHOLD = 50000;
-
 interface CartSummaryProps {
   subtotal: number;
   lang: string;
@@ -29,10 +26,9 @@ export function CartSummary({ subtotal, lang, dict }: CartSummaryProps) {
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
 
-  // Calculate delivery fee — free if above threshold
+  // Calculate delivery fee — always charged based on zone
   const zone = DELIVERY_ZONES.find((z) => z.id === selectedZone);
-  const isFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
-  const deliveryFee = isFreeShipping ? 0 : (zone?.fee || 0);
+  const deliveryFee = zone?.fee || 0;
   const total = subtotal + deliveryFee;
 
   // Handle promo code (placeholder — will validate via API)
@@ -104,20 +100,9 @@ export function CartSummary({ subtotal, lang, dict }: CartSummaryProps) {
         <div className="flex justify-between text-sm">
           <span className="text-text-secondary">{dict.cart.deliveryFee}</span>
           <span className="text-text-primary">
-            {isFreeShipping
-              ? "FREE"
-              : zone
-                ? formatPrice(deliveryFee)
-                : "—"}
+            {zone ? formatPrice(deliveryFee) : "—"}
           </span>
         </div>
-
-        {/* Free shipping note */}
-        {!isFreeShipping && (
-          <p className="text-text-muted text-xs">
-            {dict.checkout.freeShipping} {formatPrice(FREE_SHIPPING_THRESHOLD)}
-          </p>
-        )}
 
         <div className="flex justify-between text-lg font-bold border-t border-border pt-3">
           <span className="text-text-primary">{dict.cart.total}</span>
