@@ -3,7 +3,7 @@
 import { notFound } from "next/navigation";
 import { getDictionary, hasLocale } from "./dictionaries";
 import { HeroSection } from "@/components/landing/HeroSection";
-import { FeaturedShowcasePlaceholder } from "@/components/landing/FeaturedShowcasePlaceholder";
+import { FeaturedShowcase } from "@/components/landing/FeaturedShowcase";
 import { NewArrivalsStrip } from "@/components/landing/NewArrivalsStrip";
 import { BrandStory } from "@/components/landing/BrandStory";
 import { BrandLogos } from "@/components/landing/BrandLogos";
@@ -25,8 +25,8 @@ export default async function HomePage({
       {/* Full-viewport hero with diorama background and CTA */}
       <HeroSection lang={lang} dict={dict} />
 
-      {/* 3D featured showcase — placeholder until Task 5 (React Three Fiber) */}
-      <FeaturedShowcasePlaceholder dict={dict} />
+      {/* 3D featured showcase — interactive car models with drag-to-rotate */}
+      <FeaturedShowcase lang={lang} dict={dict} />
 
       {/* Horizontal scrollable row of latest products */}
       <NewArrivalsStrip lang={lang} dict={dict} />
