@@ -29,7 +29,7 @@ export function ProductCard({ product, lang, dict }: ProductCardProps) {
 
   return (
     <Link
-      href={`/${lang}/products/${product.slug}`}
+      href={`/${lang}/products/${product.brand}/${product.slug}`}
       className="group block"
     >
       {/* Product image — aspect-square container */}
