@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BRANDS } from "@/lib/constants";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { useCart } from "@/context/CartContext";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 
 // Props: current locale + full dictionary for translated labels
@@ -27,6 +28,7 @@ export function Navbar({ lang, dict }: NavbarProps) {
   // Mobile menu toggle state
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { itemCount } = useCart();
 
   // Check if a nav link is currently active
   const isActive = (href: string) => pathname === href;
@@ -107,11 +109,13 @@ export function Navbar({ lang, dict }: NavbarProps) {
                 />
               </svg>
 
-              {/* Cart badge — will be populated by cart context in Task 8 */}
-              {/* <span className="absolute -top-1 -right-1 bg-accent text-background
-                               text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
-                0
-              </span> */}
+              {/* Cart badge — shows total item count from CartContext */}
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-accent text-background
+                                 text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                  {itemCount > 9 ? "9+" : itemCount}
+                </span>
+              )}
             </Link>
 
             {/* Account button */}

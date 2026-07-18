@@ -1,9 +1,10 @@
 // Locale layout — wraps all pages under /en/* and /my/*
-// Provides the Navbar, Footer, and dictionary context
+// Provides the Navbar, Footer, dictionary context, and CartProvider
 import { notFound } from "next/navigation";
 import { getDictionary, hasLocale, locales } from "./dictionaries";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { CartProvider } from "@/context/CartContext";
 
 // Pre-generate both locale paths at build time for static rendering
 export async function generateStaticParams() {
@@ -28,7 +29,7 @@ export default async function LocaleLayout({
   const dict = await getDictionary(lang);
 
   return (
-    <>
+    <CartProvider>
       {/* Main navigation — sticky at top */}
       <Navbar lang={lang} dict={dict} />
 
@@ -37,6 +38,6 @@ export default async function LocaleLayout({
 
       {/* Site footer — always at bottom */}
       <Footer lang={lang} dict={dict} />
-    </>
+    </CartProvider>
   );
 }

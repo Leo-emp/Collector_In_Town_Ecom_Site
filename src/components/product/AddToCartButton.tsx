@@ -1,8 +1,9 @@
 // AddToCartButton — client component for adding products to the cart
-// Handles quantity selection and disabled state for sold-out items
+// Uses CartContext for state management, handles quantity + sold-out states
 "use client";
 
 import { useState } from "react";
+import { useCart } from "@/context/CartContext";
 import { MAX_QUANTITY_PER_ITEM } from "@/lib/constants";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 
@@ -15,31 +16,11 @@ interface AddToCartButtonProps {
 export function AddToCartButton({ productId, isInStock, dict }: AddToCartButtonProps) {
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const { addItem } = useCart();
 
-  // Handle add to cart — stores in localStorage (full cart logic in Task 8)
+  // Handle add to cart via CartContext
   const handleAddToCart = () => {
-    // Read existing cart from localStorage
-    const cart = JSON.parse(localStorage.getItem("cit-cart") || "[]");
-
-    // Check if product already in cart
-    const existingIndex = cart.findIndex(
-      (item: { productId: string }) => item.productId === productId
-    );
-
-    if (existingIndex >= 0) {
-      // Update quantity (capped at max)
-      cart[existingIndex].quantity = Math.min(
-        cart[existingIndex].quantity + quantity,
-        MAX_QUANTITY_PER_ITEM
-      );
-    } else {
-      // Add new item
-      cart.push({ productId, quantity });
-    }
-
-    localStorage.setItem("cit-cart", JSON.stringify(cart));
-
-    // Show "Added" feedback briefly
+    addItem(productId, quantity);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
