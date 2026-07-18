@@ -25,10 +25,8 @@ create policy "Users read own orders"
   on public.orders for select
   using (auth.uid() = customer_id);
 
--- Orders: allow reading by guest tracking token (for unauthenticated tracking)
-create policy "Guest tracking token read"
-  on public.orders for select
-  using (guest_tracking_token is not null);
+-- Guest order tracking uses a server-side API route with adminClient (bypasses RLS)
+-- No client-side RLS policy needed for guest tracking
 
 -- Customers: users can read their own profile
 create policy "Users read own profile"
