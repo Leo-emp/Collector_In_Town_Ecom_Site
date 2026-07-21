@@ -31,7 +31,7 @@ export default async function AdminOrdersPage({ params }: { params: Promise<{ la
 
   return (
     <div>
-      <h1 className="font-[family-name:var(--font-playfair)] text-2xl text-text-primary mb-6">Orders</h1>
+      <h1 className="font-[family-name:var(--font-cinzel)] text-2xl text-text-primary mb-6">Orders</h1>
 
       {/* Stats */}
       <div className="flex gap-4 mb-6 flex-wrap">

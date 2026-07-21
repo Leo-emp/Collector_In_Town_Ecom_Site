@@ -32,7 +32,7 @@ export default async function OrderConfirmationPage({
       </div>
 
       {/* Heading */}
-      <h1 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl text-text-primary mb-3">
+      <h1 className="font-[family-name:var(--font-cinzel)] text-3xl md:text-4xl text-text-primary mb-3">
         {dict.checkout.orderPlaced}
       </h1>
 

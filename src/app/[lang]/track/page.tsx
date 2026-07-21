@@ -23,7 +23,7 @@ export default async function TrackOrderPage({
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl text-text-primary mb-2">
+      <h1 className="font-[family-name:var(--font-cinzel)] text-3xl md:text-4xl text-text-primary mb-2">
         {dict.tracking.title}
       </h1>
       <p className="text-text-secondary mb-8">

@@ -1,4 +1,4 @@
-// CheckoutForm — multi-step checkout with contact, delivery, payment, and review
+﻿// CheckoutForm — multi-step checkout with contact, delivery, payment, and review
 // Client component that reads cart from CartContext
 "use client";
 
@@ -110,7 +110,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 className="font-[family-name:var(--font-playfair)] text-2xl text-text-primary mb-2">
+        <h2 className="font-[family-name:var(--font-cinzel)] text-2xl text-text-primary mb-2">
           {dict.checkout.orderPlaced}
         </h2>
         <p className="text-text-secondary mb-1">{dict.checkout.orderNumber}</p>

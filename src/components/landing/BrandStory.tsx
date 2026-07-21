@@ -1,4 +1,4 @@
-// Brand story section — cinematic section about the brand's passion
+﻿// Brand story section — cinematic section about the brand's passion
 // Dark aesthetic with minimal text and premium feel
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 
@@ -27,7 +27,7 @@ export function BrandStory({ dict }: BrandStoryProps) {
         </p>
 
         {/* Main headline */}
-        <h2 className="font-[family-name:var(--font-playfair)] text-3xl sm:text-4xl md:text-5xl text-text-primary mb-8 leading-tight">
+        <h2 className="font-[family-name:var(--font-cinzel)] text-3xl sm:text-4xl md:text-5xl text-text-primary mb-8 leading-tight">
           {dict.sections.brandStoryTitle}
         </h2>
 

@@ -92,7 +92,7 @@ export default async function ProductPage({
           </p>
 
           {/* Product name */}
-          <h1 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl text-text-primary mb-4">
+          <h1 className="font-[family-name:var(--font-cinzel)] text-3xl md:text-4xl text-text-primary mb-4">
             {name}
           </h1>
 
@@ -148,7 +148,7 @@ export default async function ProductPage({
       {/* Related products */}
       {relatedProducts.length > 0 && (
         <section className="mt-16 border-t border-border pt-12">
-          <h2 className="font-[family-name:var(--font-playfair)] text-2xl text-text-primary mb-8">
+          <h2 className="font-[family-name:var(--font-cinzel)] text-2xl text-text-primary mb-8">
             {dict.product.relatedProducts}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">

@@ -1,4 +1,4 @@
-// Navbar — premium dark navigation bar with brand links, cart, and locale switcher
+﻿// Navbar — premium dark navigation bar with brand links, cart, and locale switcher
 // Sticky at top, transparent on scroll-top, solid on scroll
 "use client";
 
@@ -45,7 +45,7 @@ export function Navbar({ lang, dict }: NavbarProps) {
             href={localePath("/")}
             className="flex items-center gap-2 shrink-0"
           >
-            <span className="font-[family-name:var(--font-playfair)] text-xl text-accent font-bold">
+            <span className="font-[family-name:var(--font-cinzel)] text-xl text-accent font-bold">
               Collector In Town
             </span>
           </Link>

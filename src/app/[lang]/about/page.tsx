@@ -11,7 +11,7 @@ export default async function AboutPage({ params }: { params: Promise<{ lang: st
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl text-text-primary mb-6">
+      <h1 className="font-[family-name:var(--font-cinzel)] text-3xl md:text-4xl text-text-primary mb-6">
         {dict.footer.about}
       </h1>
 
@@ -27,14 +27,14 @@ export default async function AboutPage({ params }: { params: Promise<{ lang: st
           to help you find the perfect addition to your shelf.
         </p>
 
-        <h2 className="font-[family-name:var(--font-playfair)] text-2xl text-text-primary pt-4">Our Mission</h2>
+        <h2 className="font-[family-name:var(--font-cinzel)] text-2xl text-text-primary pt-4">Our Mission</h2>
         <p>
           To make premium diecast collecting accessible to enthusiasts across Myanmar.
           We believe every collector deserves access to authentic, high-quality models
           at fair prices, delivered safely to their door.
         </p>
 
-        <h2 className="font-[family-name:var(--font-playfair)] text-2xl text-text-primary pt-4">Why Choose Us</h2>
+        <h2 className="font-[family-name:var(--font-cinzel)] text-2xl text-text-primary pt-4">Why Choose Us</h2>
         <ul className="space-y-2">
           <li>Authentic products from authorized distributors</li>
           <li>Careful packaging to protect every model</li>

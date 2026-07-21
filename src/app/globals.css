@@ -26,9 +26,9 @@
   --color-error: #ef4444;
   --color-warning: #f59e0b;
 
-  /* Fonts — Inter for body, Playfair Display for display/headings */
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-display: "Playfair Display", serif;
+  /* Fonts — Outfit for body, Cinzel for display/headings */
+  --font-sans: "Outfit", system-ui, sans-serif;
+  --font-display: "Cinzel", serif;
 }
 
 /* Global body styles */

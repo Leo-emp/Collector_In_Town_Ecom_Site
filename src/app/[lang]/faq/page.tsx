@@ -22,7 +22,7 @@ export default async function FaqPage({ params }: { params: Promise<{ lang: stri
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl text-text-primary mb-8">
+      <h1 className="font-[family-name:var(--font-cinzel)] text-3xl md:text-4xl text-text-primary mb-8">
         {dict.footer.faq}
       </h1>
 

@@ -1,4 +1,4 @@
-// Brand logos section — horizontal row of the 4 diecast brands we carry
+﻿// Brand logos section — horizontal row of the 4 diecast brands we carry
 // Shows actual brand logo images with hover effects
 import Link from "next/link";
 import { BRANDS } from "@/lib/constants";
@@ -17,7 +17,7 @@ export function BrandLogos({ lang, dict }: BrandLogosProps) {
         <p className="text-accent/60 text-sm uppercase tracking-[0.3em] mb-3">
           {dict.sections.brands}
         </p>
-        <h2 className="font-[family-name:var(--font-playfair)] text-2xl md:text-3xl text-text-primary mb-3">
+        <h2 className="font-[family-name:var(--font-cinzel)] text-2xl md:text-3xl text-text-primary mb-3">
           {dict.sections.brandsDesc}
         </h2>
 

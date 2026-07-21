@@ -46,7 +46,7 @@ export default async function AdminLayout({
           <Link href={`/${lang}`} className="text-accent text-xs hover:underline">
             &larr; Back to Store
           </Link>
-          <h2 className="font-[family-name:var(--font-playfair)] text-lg text-text-primary mt-2">
+          <h2 className="font-[family-name:var(--font-cinzel)] text-lg text-text-primary mt-2">
             Admin Panel
           </h2>
         </div>

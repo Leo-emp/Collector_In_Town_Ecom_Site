@@ -19,7 +19,7 @@ export default async function AdminCustomersPage({ params }: { params: Promise<{
 
   return (
     <div>
-      <h1 className="font-[family-name:var(--font-playfair)] text-2xl text-text-primary mb-6">Customers</h1>
+      <h1 className="font-[family-name:var(--font-cinzel)] text-2xl text-text-primary mb-6">Customers</h1>
 
       <p className="text-text-muted text-sm mb-6">{CUSTOMERS.length} registered customers</p>
 

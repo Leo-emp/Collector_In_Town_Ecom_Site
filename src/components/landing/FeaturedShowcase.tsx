@@ -1,4 +1,4 @@
-// Featured Showcase — cinematic product photo carousel
+﻿// Featured Showcase — cinematic product photo carousel
 // Premium presentation: floating car, spotlight glow, reflection, smooth transitions
 // No 3D models needed — beautiful photography sells better than janky 3D
 "use client";
@@ -142,7 +142,7 @@ export function FeaturedShowcase({ lang, dict, cars }: FeaturedShowcaseProps) {
         <p className="text-accent/40 text-[10px] sm:text-xs uppercase tracking-[0.35em] mb-3">
           {dict.sections.featuredShowcase}
         </p>
-        <h2 className="font-[family-name:var(--font-playfair)] text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-white/90 tracking-wide">
+        <h2 className="font-[family-name:var(--font-cinzel)] text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-white/90 tracking-wide">
           {dict.sections.featuredShowcaseDesc}
         </h2>
       </div>
@@ -251,7 +251,7 @@ export function FeaturedShowcase({ lang, dict, cars }: FeaturedShowcaseProps) {
             {activeCar.brandDisplay} &middot; {activeCar.scale}
           </p>
           <Link href={`/${lang}/products/${activeCar.brand}/${activeCar.slug}`}>
-            <h3 className="text-white font-[family-name:var(--font-playfair)] text-xl sm:text-2xl md:text-3xl
+            <h3 className="text-white font-[family-name:var(--font-cinzel)] text-xl sm:text-2xl md:text-3xl
                            hover:text-accent transition-colors duration-300 tracking-wide mb-2">
               {activeCar.name}
             </h3>

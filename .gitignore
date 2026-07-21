@@ -32,9 +32,18 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.local.example
 
 # unused 3D models
 /public/models/
+
+# local SQLite files (Better Auth fallback)
+/local.db
+/local.db-wal
+/auth
+/auth-wal
+/db
+/db-wal
 
 # vercel
 .vercel

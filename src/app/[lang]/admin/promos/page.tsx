@@ -16,7 +16,7 @@ export default function AdminPromosPage({ params }: { params: Promise<{ lang: st
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-[family-name:var(--font-playfair)] text-2xl text-text-primary">Promo Codes</h1>
+        <h1 className="font-[family-name:var(--font-cinzel)] text-2xl text-text-primary">Promo Codes</h1>
         <button
           onClick={() => setShowForm(!showForm)}
           className="px-4 py-2.5 bg-accent text-background rounded-lg font-semibold text-sm hover:bg-accent-hover transition-colors"

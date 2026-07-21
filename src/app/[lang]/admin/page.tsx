@@ -53,7 +53,7 @@ export default async function AdminDashboard({
 
   return (
     <div>
-      <h1 className="font-[family-name:var(--font-playfair)] text-2xl text-text-primary mb-6">
+      <h1 className="font-[family-name:var(--font-cinzel)] text-2xl text-text-primary mb-6">
         Dashboard
       </h1>
 

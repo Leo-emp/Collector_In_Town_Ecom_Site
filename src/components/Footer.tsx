@@ -1,4 +1,4 @@
-// Footer — site-wide footer with brand info, quick links, and newsletter signup
+﻿// Footer — site-wide footer with brand info, quick links, and newsletter signup
 // Premium dark design with accent color highlights
 import Link from "next/link";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
@@ -25,7 +25,7 @@ export function Footer({ lang, dict }: FooterProps) {
           {/* Column 1: Brand info */}
           <div>
             <Link href={localePath("/")} className="inline-block mb-4">
-              <span className="font-[family-name:var(--font-playfair)] text-2xl text-accent font-bold">
+              <span className="font-[family-name:var(--font-cinzel)] text-2xl text-accent font-bold">
                 Collector In Town
               </span>
             </Link>

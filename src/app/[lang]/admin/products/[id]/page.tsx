@@ -49,7 +49,7 @@ export default function AdminProductEditPage({
     <div className="max-w-3xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-[family-name:var(--font-playfair)] text-2xl text-text-primary">
+        <h1 className="font-[family-name:var(--font-cinzel)] text-2xl text-text-primary">
           {isNew ? "Add Product" : "Edit Product"}
         </h1>
         <Link

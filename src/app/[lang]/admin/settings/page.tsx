@@ -25,7 +25,7 @@ export default function AdminSettingsPage({ params }: { params: Promise<{ lang: 
 
   return (
     <div className="max-w-2xl">
-      <h1 className="font-[family-name:var(--font-playfair)] text-2xl text-text-primary mb-6">Settings</h1>
+      <h1 className="font-[family-name:var(--font-cinzel)] text-2xl text-text-primary mb-6">Settings</h1>
 
       <div className="space-y-6">
         {/* Store info */}

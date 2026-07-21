@@ -9,9 +9,12 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@libsql/client": "^0.17.4",
     "@stripe/stripe-js": "^9.10.0",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.7",
+    "better-auth": "^1.6.23",
+    "drizzle-orm": "^0.45.2",
     "next": "16.2.10",
     "next-intl": "^4.13.2",
     "react": "19.2.4",
@@ -30,6 +33,7 @@
     "@types/react-dom": "^19",
     "@types/three": "^0.185.1",
     "@vitejs/plugin-react": "^6.0.3",
+    "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "jsdom": "^29.1.1",

@@ -1,4 +1,4 @@
-// New arrivals strip — horizontal scrollable row of latest products
+﻿// New arrivals strip — horizontal scrollable row of latest products
 // Fetches from Supabase in production; uses placeholder cards for now
 import Link from "next/link";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
@@ -31,7 +31,7 @@ export function NewArrivalsStrip({ lang, dict }: NewArrivalsStripProps) {
         {/* Section header — title + "View All" link */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl text-text-primary">
+            <h2 className="font-[family-name:var(--font-cinzel)] text-3xl md:text-4xl text-text-primary">
               {dict.sections.newArrivals}
             </h2>
             <p className="text-text-secondary mt-2">

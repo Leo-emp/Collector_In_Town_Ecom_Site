@@ -18,7 +18,7 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
 
   return (
     <div>
-      <h1 className="font-[family-name:var(--font-playfair)] text-2xl text-text-primary mb-6">Delivery Zones</h1>
+      <h1 className="font-[family-name:var(--font-cinzel)] text-2xl text-text-primary mb-6">Delivery Zones</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {zones.map((zone) => (

@@ -1,4 +1,4 @@
-// 3D Featured Showcase placeholder — will be replaced with React Three Fiber in Task 5
+﻿// 3D Featured Showcase placeholder — will be replaced with React Three Fiber in Task 5
 // Shows a styled placeholder section to maintain the landing page flow
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 
@@ -15,7 +15,7 @@ export function FeaturedShowcasePlaceholder({ dict }: FeaturedShowcasePlaceholde
           <p className="text-accent/60 text-sm uppercase tracking-[0.3em] mb-3">
             {dict.sections.featuredShowcase}
           </p>
-          <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl text-text-primary">
+          <h2 className="font-[family-name:var(--font-cinzel)] text-3xl md:text-4xl text-text-primary">
             {dict.sections.featuredShowcaseDesc}
           </h2>
         </div>
