@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# unused 3D models
+/public/models/
+
 # vercel
 .vercel
 
