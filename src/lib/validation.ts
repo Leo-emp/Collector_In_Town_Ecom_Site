@@ -71,6 +71,11 @@ export const deliveryZoneSchema = z.object({
   is_active: z.boolean(),
 });
 
+// Admin login — simple password check (single admin, no roles)
+export const adminLoginSchema = z.object({
+  password: z.string().min(1, "Password is required"),
+});
+
 // Type exports for consuming components
 export type ContactInput = z.infer<typeof contactSchema>;
 export type DeliveryInput = z.infer<typeof deliverySchema>;

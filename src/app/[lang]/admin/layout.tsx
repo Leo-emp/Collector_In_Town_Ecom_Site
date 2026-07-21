@@ -1,10 +1,12 @@
 // Admin layout — sidebar navigation + content area
+// Protected by admin password cookie — redirects to login if not authenticated
 // Separate from the public layout (no Navbar/Footer)
 import Link from "next/link";
 import { getDictionary, hasLocale } from "../dictionaries";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { verifyAdminSession } from "@/lib/admin-auth";
 
-// Admin sidebar nav items
+// Admin sidebar nav items — icon SVG paths + route suffixes
 const ADMIN_NAV = [
   { key: "dashboard", href: "", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
   { key: "products", href: "/products", icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" },
@@ -15,7 +17,7 @@ const ADMIN_NAV = [
   { key: "settings", href: "/settings", icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" },
 ];
 
-// Admin nav labels
+// Admin nav labels — displayed next to icons in sidebar
 const NAV_LABELS: Record<string, string> = {
   dashboard: "Dashboard",
   products: "Products",
@@ -36,13 +38,21 @@ export default async function AdminLayout({
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
 
+  // Check admin session cookie — redirect to login if not authenticated
+  const isAdmin = await verifyAdminSession();
+  if (!isAdmin) {
+    // Login page is at /[lang]/admin-login (outside this layout to avoid redirect loop)
+    redirect(`/${lang}/admin-login`);
+  }
+
   const basePath = `/${lang}/admin`;
 
   return (
     <div className="flex min-h-[calc(100vh-64px)]">
-      {/* Sidebar */}
+      {/* Sidebar — hidden on mobile */}
       <aside className="w-64 bg-surface border-r border-border flex-shrink-0 hidden lg:block">
         <div className="p-4 border-b border-border">
+          {/* Back to store link */}
           <Link href={`/${lang}`} className="text-accent text-xs hover:underline">
             &larr; Back to Store
           </Link>
@@ -51,6 +61,7 @@ export default async function AdminLayout({
           </h2>
         </div>
 
+        {/* Navigation links */}
         <nav className="p-3 space-y-1">
           {ADMIN_NAV.map((item) => (
             <Link
@@ -66,9 +77,25 @@ export default async function AdminLayout({
             </Link>
           ))}
         </nav>
+
+        {/* Logout button — at the bottom of the sidebar */}
+        <div className="p-3 mt-auto border-t border-border">
+          <form action="/api/admin/logout" method="POST">
+            <button
+              type="submit"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-muted
+                         hover:text-error hover:bg-error/10 transition-colors w-full"
+            >
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Logout
+            </button>
+          </form>
+        </div>
       </aside>
 
-      {/* Main content */}
+      {/* Main content area */}
       <main className="flex-1 p-6 lg:p-8 overflow-x-hidden">
         {children}
       </main>
