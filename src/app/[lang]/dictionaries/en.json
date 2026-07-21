@@ -92,6 +92,7 @@
     "orSignIn": "or sign in to save your details"
   },
   "account": {
+    "title": "My Account",
     "myOrders": "My Orders",
     "profile": "Profile",
     "signOut": "Sign Out",
