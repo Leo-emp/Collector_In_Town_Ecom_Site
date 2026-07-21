@@ -56,6 +56,6 @@ export const config = {
     // - _next/image (image optimization)
     // - favicon.ico, sitemap.xml, robots.txt (metadata files)
     // - api routes (handled separately)
-    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|showcase/|models/|images/).*)",
   ],
 };

@@ -1,5 +1,5 @@
 // Brand logos section — horizontal row of the 4 diecast brands we carry
-// Shows brand names styled as logos (until actual logo images are uploaded)
+// Shows actual brand logo images with hover effects
 import Link from "next/link";
 import { BRANDS } from "@/lib/constants";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
@@ -34,15 +34,23 @@ export function BrandLogos({ lang, dict }: BrandLogosProps) {
                          bg-surface/50 rounded-xl border border-border
                          hover:border-accent/30 hover:bg-surface transition-all"
             >
-              {/* Brand logo placeholder — text styled as logo */}
-              {/* Replace with <Image> of actual brand logos later */}
-              <span className="text-xl md:text-2xl font-bold text-text-secondary
-                               group-hover:text-accent transition-colors tracking-tight">
-                {brand.name}
-              </span>
+              {/* Brand logo — centered, large */}
+              <div className="flex items-center justify-center h-24 sm:h-32 w-full">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={brand.logo}
+                  alt={brand.name}
+                  className={`w-full object-contain
+                             opacity-80 group-hover:opacity-100 transition-all duration-300
+                             ${brand.blendMode === "invert" ? "invert" : ""}
+                             ${brand.slug === "hot-wheels" ? "max-h-32 sm:max-h-40 scale-110" : ""}
+                             ${brand.slug === "pop-race" ? "max-h-16 sm:max-h-20" : ""}
+                             ${brand.slug !== "hot-wheels" && brand.slug !== "pop-race" ? "max-h-24 sm:max-h-32" : ""}`}
+                />
+              </div>
 
               {/* "View Collection" link */}
-              <span className="text-text-muted text-xs mt-3 group-hover:text-accent/70
+              <span className="text-text-muted text-xs mt-4 group-hover:text-accent/70
                                transition-colors uppercase tracking-wider">
                 {dict.sections.viewCollection}
               </span>

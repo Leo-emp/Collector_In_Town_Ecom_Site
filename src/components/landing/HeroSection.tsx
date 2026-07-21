@@ -1,5 +1,4 @@
-// Hero section — full-viewport diorama-style showcase with headline and CTA
-// Uses a gradient background as placeholder until a real diorama photo is uploaded
+// Hero section — full-viewport diorama photo with headline and CTA overlay
 import Link from "next/link";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 
@@ -10,63 +9,35 @@ interface HeroSectionProps {
 
 export function HeroSection({ lang, dict }: HeroSectionProps) {
   return (
-    <section className="relative min-h-[85vh] flex items-end justify-center overflow-hidden">
-      {/* Background — gradient placeholder for the diorama photograph */}
-      {/* Replace this div with an <Image> of the actual diorama photo */}
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          background: `
-            radial-gradient(ellipse at 50% 30%, rgba(201, 168, 76, 0.15) 0%, transparent 60%),
-            radial-gradient(ellipse at 20% 80%, rgba(201, 168, 76, 0.08) 0%, transparent 50%),
-            radial-gradient(ellipse at 80% 70%, rgba(201, 168, 76, 0.06) 0%, transparent 50%),
-            linear-gradient(180deg, #0a0a0a 0%, #111111 40%, #0d0d0d 100%)
-          `,
-        }}
+    <section className="relative min-h-[90vh] flex items-end justify-center overflow-hidden">
+      {/* Diorama background image — full bleed */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/showcase/hero-diorama.png"
+        alt="Diecast car diorama showroom"
+        className="absolute inset-0 w-full h-full object-cover object-center z-0"
+        draggable={false}
       />
 
-      {/* Decorative grid lines — subtle showroom floor effect */}
-      <div
-        className="absolute inset-0 z-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(201, 168, 76, 0.5) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(201, 168, 76, 0.5) 1px, transparent 1px)
-          `,
-          backgroundSize: "80px 80px",
-        }}
-      />
+      {/* Dark gradient overlay — makes text readable over the image */}
+      <div className="absolute inset-0 z-[1] bg-gradient-to-t from-background via-background/60 to-transparent" />
 
-      {/* Content overlay — positioned at the bottom of the hero */}
-      <div className="relative z-10 text-center px-4 pb-16 pt-32 max-w-4xl mx-auto">
-        {/* Small tag above headline */}
-        <p className="text-accent/80 text-sm uppercase tracking-[0.3em] mb-6 font-medium">
-          Myanmar&apos;s Premier Diecast Destination
-        </p>
-
-        {/* Main headline — Playfair Display serif */}
-        <h1 className="font-[family-name:var(--font-playfair)] text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-text-primary mb-6 leading-tight">
-          {dict.hero.title}
-        </h1>
-
-        {/* Subtitle */}
-        <p className="text-text-secondary text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-          {dict.hero.subtitle}
-        </p>
-
-        {/* CTA buttons — primary + secondary */}
+      {/* CTA buttons — positioned at the bottom */}
+      <div className="relative z-10 px-4 pb-16 pt-32">
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             href={`/${lang}/products/new-arrivals`}
             className="bg-accent text-background px-8 py-3.5 rounded-lg font-semibold
-                       hover:bg-accent-hover transition-colors text-lg min-w-[200px]"
+                       hover:bg-accent-hover transition-colors text-lg min-w-[200px]
+                       shadow-[0_4px_20px_rgba(201,168,76,0.3)]"
           >
             {dict.hero.cta}
           </Link>
           <Link
             href={`/${lang}/products/new-arrivals`}
-            className="border border-accent/50 text-accent px-8 py-3.5 rounded-lg font-semibold
-                       hover:bg-accent/10 transition-colors text-lg min-w-[200px]"
+            className="border border-white/30 text-white px-8 py-3.5 rounded-lg font-semibold
+                       hover:bg-white/10 transition-colors text-lg min-w-[200px]
+                       backdrop-blur-sm"
           >
             {dict.hero.ctaSecondary}
           </Link>
@@ -74,7 +45,7 @@ export function HeroSection({ lang, dict }: HeroSectionProps) {
       </div>
 
       {/* Bottom fade — smooth transition to next section */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent z-10" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent z-[2]" />
     </section>
   );
 }

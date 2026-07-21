@@ -1,9 +1,9 @@
 // Supported diecast brands — used for catalog routing, nav dropdown, product form
 export const BRANDS = [
-  { slug: "mini-gt", name: "Mini GT", logo: "/images/brands/mini-gt.png" },
-  { slug: "hot-wheels", name: "Hot Wheels", logo: "/images/brands/hot-wheels.png" },
-  { slug: "inno64", name: "Inno64", logo: "/images/brands/inno64.png" },
-  { slug: "pop-race", name: "Pop Race", logo: "/images/brands/pop-race.png" },
+  { slug: "mini-gt", name: "Mini GT", logo: "/images/brands/mini-gt.png", blendMode: "invert" as const },
+  { slug: "hot-wheels", name: "Hot Wheels", logo: "/images/brands/hot-wheels.png", blendMode: "none" as const },
+  { slug: "inno64", name: "Inno64", logo: "/images/brands/inno64.svg", blendMode: "none" as const },
+  { slug: "pop-race", name: "Pop Race", logo: "/images/brands/pop-race.png", blendMode: "none" as const },
 ] as const;
 
 // Valid brand slug values — used in Zod validation and route matching
