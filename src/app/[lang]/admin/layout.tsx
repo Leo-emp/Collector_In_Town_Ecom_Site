@@ -1,6 +1,9 @@
 // Admin layout — sidebar navigation + content area
 // Protected by admin password cookie — redirects to login if not authenticated
 // Separate from the public layout (no Navbar/Footer)
+// Force dynamic — auth check reads cookies at request time
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { getDictionary, hasLocale } from "../dictionaries";
 import { notFound, redirect } from "next/navigation";

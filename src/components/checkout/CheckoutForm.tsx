@@ -1,32 +1,33 @@
-﻿// CheckoutForm — multi-step checkout with contact, delivery, payment, and review
-// Client component that reads cart from CartContext
+// CheckoutForm — multi-step checkout wired to real APIs
+// Fetches delivery zones and product data from API, submits orders to POST /api/orders
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/format";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 
-// Delivery zones with fees — will come from Supabase when connected
-const DELIVERY_ZONES = [
-  { id: "yangon", name_en: "Yangon", name_my: "ရန်ကုန်", fee: 2000 },
-  { id: "mandalay", name_en: "Mandalay", name_my: "မန္တလေး", fee: 3500 },
-  { id: "naypyidaw", name_en: "Naypyidaw", name_my: "နေပြည်တော်", fee: 3000 },
-  { id: "other", name_en: "Other Regions", name_my: "အခြားဒေသများ", fee: 5000 },
-];
+// Shape of delivery zone from the API
+interface DeliveryZone {
+  id: string;
+  nameEn: string;
+  nameMy: string | null;
+  fee: number;
+  estimatedTime: string | null;
+}
 
-// Placeholder product data for resolving cart items
-const PRODUCT_CATALOG = [
-  { id: "1", name_en: "Nissan GT-R R35 Liberty Walk", name_my: "နစ်ဆန် GT-R R35 Liberty Walk", slug: "nissan-gtr-r35-liberty-walk", brand: "mini-gt", price: 45000, photos: [] as string[] },
-  { id: "2", name_en: "Porsche 911 GT3 RS", name_my: "ပေါ့ရှ 911 GT3 RS", slug: "porsche-911-gt3-rs", brand: "mini-gt", price: 52000, photos: [] as string[] },
-  { id: "3", name_en: "Toyota AE86 Sprinter Trueno", name_my: "တိုယိုတာ AE86 Sprinter Trueno", slug: "toyota-ae86-sprinter-trueno", brand: "hot-wheels", price: 12000, photos: [] as string[] },
-  { id: "4", name_en: "Mazda RX-7 FD3S Spirit R", name_my: "မဇ်ဒါ RX-7 FD3S Spirit R", slug: "mazda-rx7-fd3s-spirit-r", brand: "hot-wheels", price: 15000, photos: [] as string[] },
-  { id: "5", name_en: "Honda Civic Type-R EK9", name_my: "ဟွန်ဒါ Civic Type-R EK9", slug: "honda-civic-type-r-ek9", brand: "inno64", price: 38000, photos: [] as string[] },
-  { id: "6", name_en: "Mitsubishi Lancer Evolution III", name_my: "မစ်ဆူဘီရှီ Lancer Evolution III", slug: "mitsubishi-lancer-evo-iii", brand: "inno64", price: 42000, photos: [] as string[] },
-  { id: "7", name_en: "Nissan Skyline GT-R R34 V-Spec II", name_my: "နစ်ဆန် Skyline GT-R R34 V-Spec II", slug: "nissan-skyline-gtr-r34-vspec-ii", brand: "pop-race", price: 35000, photos: [] as string[] },
-  { id: "8", name_en: "Toyota Supra A80 TRD", name_my: "တိုယိုတာ Supra A80 TRD", slug: "toyota-supra-a80-trd", brand: "pop-race", price: 32000, photos: [] as string[] },
-];
+// Shape of product from the API
+interface ProductData {
+  id: string;
+  nameEn: string;
+  nameMy: string | null;
+  slug: string;
+  brand: string;
+  price: number;
+  images: Array<{ url: string }>;
+}
 
 // Steps in the checkout flow
 type Step = "contact" | "delivery" | "payment" | "review";
@@ -39,29 +40,73 @@ interface CheckoutFormProps {
 
 export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
   const { items, clearCart } = useCart();
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState<Step>("contact");
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
+  const [trackingToken, setTrackingToken] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  // Data from APIs
+  const [zones, setZones] = useState<DeliveryZone[]>([]);
+  const [productMap, setProductMap] = useState<Map<string, ProductData>>(new Map());
+  const [loading, setLoading] = useState(true);
 
   // Form state
   const [contact, setContact] = useState({ name: "", email: "", phone: "" });
   const [delivery, setDelivery] = useState({
     address: "", township: "", city: "", zone: "", notes: "",
   });
-  const [payment, setPayment] = useState<"kbzpay" | "card">("kbzpay");
+  const [promoCode, setPromoCode] = useState("");
+  const [payment, setPayment] = useState<"kbzpay">("kbzpay");
 
-  // Resolve cart items
+  // Fetch delivery zones and product data on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch delivery zones and products in parallel
+        const [zonesRes, productsRes] = await Promise.all([
+          fetch("/api/delivery-zones"),
+          items.length > 0
+            ? fetch(`/api/products?ids=${items.map((i) => i.productId).join(",")}`)
+            : Promise.resolve({ json: async () => ({ products: [] }) } as Response),
+        ]);
+
+        const zonesData = await zonesRes.json();
+        setZones(zonesData.zones || []);
+
+        const productsData = await productsRes.json();
+        const map = new Map<string, ProductData>();
+        for (const p of productsData.products || []) {
+          map.set(p.id, p);
+        }
+        setProductMap(map);
+      } catch {
+        setError("Failed to load checkout data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [items]);
+
+  // Resolve cart items to product data
   const cartProducts = items
     .map((item) => {
-      const product = PRODUCT_CATALOG.find((p) => p.id === item.productId);
-      return product ? { product, quantity: item.quantity } : null;
+      const p = productMap.get(item.productId);
+      if (!p) return null;
+      return {
+        product: p,
+        quantity: item.quantity,
+      };
     })
-    .filter(Boolean) as { product: (typeof PRODUCT_CATALOG)[number]; quantity: number }[];
+    .filter(Boolean) as { product: ProductData; quantity: number }[];
 
   const subtotal = cartProducts.reduce(
     (sum, { product, quantity }) => sum + product.price * quantity, 0
   );
-  const zone = DELIVERY_ZONES.find((z) => z.id === delivery.zone);
+  const zone = zones.find((z) => z.id === delivery.zone);
   const deliveryFee = zone?.fee || 0;
   const total = subtotal + deliveryFee;
 
@@ -93,13 +138,62 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
     if (prevIndex >= 0) setCurrentStep(STEPS[prevIndex]);
   };
 
-  // Place order — will call API in production
-  const handlePlaceOrder = () => {
-    const id = `CIT-${Date.now().toString(36).toUpperCase()}`;
-    setOrderNumber(id);
-    setOrderPlaced(true);
-    clearCart();
+  // Place order — calls POST /api/orders
+  const handlePlaceOrder = async () => {
+    setSubmitting(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contact: {
+            name: contact.name,
+            email: contact.email,
+            phone: contact.phone,
+          },
+          delivery: {
+            address: delivery.address,
+            township: delivery.township,
+            city: delivery.city,
+            zone: delivery.zone,
+            notes: delivery.notes || undefined,
+          },
+          items: items.map((i) => ({
+            productId: i.productId,
+            quantity: i.quantity,
+          })),
+          payment_method: payment,
+          promo_code: promoCode || undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to place order");
+      }
+
+      const data = await res.json();
+      setOrderNumber(data.order.orderNumber);
+      setTrackingToken(data.trackingToken);
+      setOrderPlaced(true);
+      clearCart();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to place order");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  // Loading state while fetching zones and products
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   // Order placed success screen
   if (orderPlaced) {
@@ -115,13 +209,22 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
         </h2>
         <p className="text-text-secondary mb-1">{dict.checkout.orderNumber}</p>
         <p className="text-accent text-xl font-bold mb-6">{orderNumber}</p>
-        <Link
-          href={`/${lang}`}
-          className="inline-block px-6 py-3 bg-accent text-background rounded-lg
-                     font-semibold hover:bg-accent-hover transition-colors"
-        >
-          {dict.cart.continueShopping}
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link
+            href={`/${lang}`}
+            className="inline-block px-6 py-3 bg-accent text-background rounded-lg
+                       font-semibold hover:bg-accent-hover transition-colors"
+          >
+            {dict.cart.continueShopping}
+          </Link>
+          <Link
+            href={`/${lang}/track?token=${trackingToken}`}
+            className="inline-block px-6 py-3 border border-border text-text-primary rounded-lg
+                       font-semibold hover:bg-surface-hover transition-colors"
+          >
+            {dict.account.trackOrder}
+          </Link>
+        </div>
       </div>
     );
   }
@@ -145,10 +248,20 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
   // Shared input styles
   const inputClass = "w-full bg-background border border-border rounded-lg px-3 py-2.5 text-text-primary text-sm placeholder:text-text-muted focus:outline-none focus:border-accent";
 
+  // Helper to get product name based on locale
+  const getName = (p: ProductData) => lang === "my" && p.nameMy ? p.nameMy : p.nameEn;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Left: Form steps */}
       <div className="lg:col-span-2">
+        {/* Error banner */}
+        {error && (
+          <div className="bg-error/10 border border-error/20 rounded-lg px-4 py-3 mb-6 text-error text-sm">
+            {error}
+          </div>
+        )}
+
         {/* Step indicator */}
         <div className="flex items-center gap-2 mb-8">
           {STEPS.map((step, i) => (
@@ -176,12 +289,9 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
         {currentStep === "contact" && (
           <div className="space-y-4">
             <h2 className="text-text-primary font-semibold text-lg mb-4">{dict.checkout.contact}</h2>
-
-            {/* Guest checkout notice */}
             <p className="text-text-muted text-sm mb-4">
               {dict.checkout.guestCheckout} — {dict.checkout.orSignIn}
             </p>
-
             <div>
               <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.name}</label>
               <input
@@ -219,7 +329,6 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
         {currentStep === "delivery" && (
           <div className="space-y-4">
             <h2 className="text-text-primary font-semibold text-lg mb-4">{dict.checkout.delivery}</h2>
-
             <div>
               <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.deliveryZone}</label>
               <select
@@ -228,9 +337,10 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
                 className={inputClass}
               >
                 <option value="">-- {dict.checkout.deliveryZone} --</option>
-                {DELIVERY_ZONES.map((z) => (
+                {zones.map((z) => (
                   <option key={z.id} value={z.id}>
-                    {lang === "my" ? z.name_my : z.name_en} — {formatPrice(z.fee)}
+                    {lang === "my" && z.nameMy ? z.nameMy : z.nameEn} — {formatPrice(z.fee)}
+                    {z.estimatedTime ? ` (${z.estimatedTime})` : ""}
                   </option>
                 ))}
               </select>
@@ -284,7 +394,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
           <div className="space-y-4">
             <h2 className="text-text-primary font-semibold text-lg mb-4">{dict.checkout.payment}</h2>
 
-            {/* KBZPay option */}
+            {/* KBZPay option — only payment method at launch */}
             <label className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-colors
               ${payment === "kbzpay" ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"}`}
             >
@@ -306,27 +416,17 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
               </div>
             </label>
 
-            {/* Card option */}
-            <label className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-colors
-              ${payment === "card" ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"}`}
-            >
+            {/* Promo code field */}
+            <div className="pt-4 border-t border-border">
+              <label className="text-text-secondary text-sm block mb-1.5">Promo Code</label>
               <input
-                type="radio"
-                name="payment"
-                value="card"
-                checked={payment === "card"}
-                onChange={() => setPayment("card")}
-                className="sr-only"
+                type="text"
+                value={promoCode}
+                onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                className={inputClass}
+                placeholder="WELCOME10"
               />
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center
-                ${payment === "card" ? "border-accent" : "border-border"}`}>
-                {payment === "card" && <div className="w-2.5 h-2.5 rounded-full bg-accent" />}
-              </div>
-              <div>
-                <p className="text-text-primary font-medium">{dict.checkout.card}</p>
-                <p className="text-text-muted text-xs">Visa, Mastercard, Apple Pay</p>
-              </div>
-            </label>
+            </div>
           </div>
         )}
 
@@ -358,7 +458,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
               <p className="text-text-secondary text-sm">{delivery.address}</p>
               <p className="text-text-secondary text-sm">
                 {delivery.township}, {delivery.city}
-                {zone && ` — ${lang === "my" ? zone.name_my : zone.name_en}`}
+                {zone && ` — ${lang === "my" && zone.nameMy ? zone.nameMy : zone.nameEn}`}
               </p>
               {delivery.notes && (
                 <p className="text-text-muted text-xs mt-1">{delivery.notes}</p>
@@ -373,24 +473,22 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
                   {dict.common.edit}
                 </button>
               </div>
-              <p className="text-text-secondary text-sm">
-                {payment === "kbzpay" ? dict.checkout.kbzpay : dict.checkout.card}
-              </p>
+              <p className="text-text-secondary text-sm">{dict.checkout.kbzpay}</p>
+              {promoCode && (
+                <p className="text-accent text-xs mt-1">Promo: {promoCode}</p>
+              )}
             </div>
 
             {/* Items summary */}
             <div className="space-y-3">
-              {cartProducts.map(({ product, quantity }) => {
-                const name = lang === "my" ? product.name_my : product.name_en;
-                return (
-                  <div key={product.id} className="flex justify-between items-center text-sm">
-                    <span className="text-text-secondary">
-                      {name} × {quantity}
-                    </span>
-                    <span className="text-text-primary">{formatPrice(product.price * quantity)}</span>
-                  </div>
-                );
-              })}
+              {cartProducts.map(({ product, quantity }) => (
+                <div key={product.id} className="flex justify-between items-center text-sm">
+                  <span className="text-text-secondary">
+                    {getName(product)} × {quantity}
+                  </span>
+                  <span className="text-text-primary">{formatPrice(product.price * quantity)}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -413,10 +511,11 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
           {currentStep === "review" ? (
             <button
               onClick={handlePlaceOrder}
+              disabled={submitting}
               className="px-8 py-3 bg-accent text-background rounded-lg font-semibold
-                         hover:bg-accent-hover transition-colors"
+                         hover:bg-accent-hover transition-colors disabled:opacity-50"
             >
-              {dict.checkout.placeOrder}
+              {submitting ? "Placing Order..." : dict.checkout.placeOrder}
             </button>
           ) : (
             <button
@@ -438,15 +537,12 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
 
           {/* Items */}
           <div className="space-y-3 mb-4">
-            {cartProducts.map(({ product, quantity }) => {
-              const name = lang === "my" ? product.name_my : product.name_en;
-              return (
-                <div key={product.id} className="flex justify-between text-sm">
-                  <span className="text-text-secondary truncate mr-2">{name} ×{quantity}</span>
-                  <span className="text-text-primary shrink-0">{formatPrice(product.price * quantity)}</span>
-                </div>
-              );
-            })}
+            {cartProducts.map(({ product, quantity }) => (
+              <div key={product.id} className="flex justify-between text-sm">
+                <span className="text-text-secondary truncate mr-2">{getName(product)} ×{quantity}</span>
+                <span className="text-text-primary shrink-0">{formatPrice(product.price * quantity)}</span>
+              </div>
+            ))}
           </div>
 
           {/* Totals */}

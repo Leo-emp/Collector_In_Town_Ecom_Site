@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // GET /api/admin/customers — aggregated customer list from orders
 // Groups orders by customer email to build a customer list with stats
 // (There's no separate customers table — this aggregates from order data)

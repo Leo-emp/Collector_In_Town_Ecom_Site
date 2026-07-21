@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // GET /api/admin/promos — list all promo codes
 // POST /api/admin/promos — create a new promo code
 import { NextResponse } from "next/server";

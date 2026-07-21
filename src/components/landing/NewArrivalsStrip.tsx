@@ -1,29 +1,44 @@
-﻿// New arrivals strip — horizontal scrollable row of latest products
-// Fetches from Supabase in production; uses placeholder cards for now
+// New arrivals strip — horizontal scrollable row of latest products
+// Server component — queries Turso directly via Drizzle
 import Link from "next/link";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 import { formatPrice } from "@/lib/format";
+import { db } from "@/lib/drizzle";
+import { products, productImages } from "@/lib/schema";
+import { eq, or, desc } from "drizzle-orm";
 
 interface NewArrivalsStripProps {
   lang: string;
   dict: Dictionary;
 }
 
-// Placeholder product data — will be replaced with Supabase query
-// when the database is connected
-const PLACEHOLDER_PRODUCTS = [
-  { id: "1", name_en: "Nissan GT-R R35 Liberty Walk", name_my: "နစ်ဆန် GT-R R35", slug: "nissan-gtr-r35-liberty-walk", brand: "mini-gt", price: 45000 },
-  { id: "2", name_en: "Porsche 911 GT3 RS", name_my: "ပေါ့ရှ 911 GT3 RS", slug: "porsche-911-gt3-rs", brand: "mini-gt", price: 52000 },
-  { id: "3", name_en: "Toyota AE86 Sprinter Trueno", name_my: "တိုယိုတာ AE86", slug: "toyota-ae86-sprinter-trueno", brand: "hot-wheels", price: 12000 },
-  { id: "4", name_en: "Mazda RX-7 FD3S Spirit R", name_my: "မဇ်ဒါ RX-7", slug: "mazda-rx7-fd3s-spirit-r", brand: "hot-wheels", price: 15000 },
-  { id: "5", name_en: "Honda Civic Type-R EK9", name_my: "ဟွန်ဒါ Civic EK9", slug: "honda-civic-type-r-ek9", brand: "inno64", price: 38000 },
-  { id: "6", name_en: "Mitsubishi Lancer Evo III", name_my: "မစ်ဆူဘီရှီ Evo III", slug: "mitsubishi-lancer-evo-iii", brand: "inno64", price: 42000 },
-  { id: "7", name_en: "Nissan Skyline GT-R R34", name_my: "နစ်ဆန် R34", slug: "nissan-skyline-gtr-r34-vspec-ii", brand: "pop-race", price: 35000 },
-  { id: "8", name_en: "Toyota Supra A80 TRD", name_my: "တိုယိုတာ Supra A80", slug: "toyota-supra-a80-trd", brand: "pop-race", price: 32000 },
-];
+export async function NewArrivalsStrip({ lang, dict }: NewArrivalsStripProps) {
+  // Fetch the 8 newest active/sold_out products
+  const productList = await db
+    .select()
+    .from(products)
+    .where(or(eq(products.status, "active"), eq(products.status, "sold_out")))
+    .orderBy(desc(products.createdAt))
+    .limit(8);
 
-export function NewArrivalsStrip({ lang, dict }: NewArrivalsStripProps) {
-  const products = PLACEHOLDER_PRODUCTS;
+  // Fetch images for these products
+  const allImages = productList.length > 0
+    ? await db.select().from(productImages).orderBy(productImages.displayOrder)
+    : [];
+
+  // Map products with their first image URL
+  const displayProducts = productList.map((p) => {
+    const imgs = allImages.filter((img) => img.productId === p.id);
+    return {
+      id: p.id,
+      name_en: p.nameEn,
+      name_my: p.nameMy || p.nameEn,
+      slug: p.slug,
+      brand: p.brand,
+      price: p.price,
+      photo: imgs[0]?.url || null,
+    };
+  });
 
   return (
     <section className="py-16 px-4">
@@ -44,7 +59,6 @@ export function NewArrivalsStrip({ lang, dict }: NewArrivalsStripProps) {
                        hidden sm:flex items-center gap-1"
           >
             {dict.sections.viewAll}
-            {/* Arrow icon */}
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
@@ -54,42 +68,54 @@ export function NewArrivalsStrip({ lang, dict }: NewArrivalsStripProps) {
         {/* Horizontal scrollable product strip */}
         <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide
                         -mx-4 px-4">
-          {products.map((product) => (
-            <Link
-              key={product.id}
-              href={`/${lang}/products/${product.slug}`}
-              className="group flex-shrink-0 w-[200px] sm:w-[240px] snap-start"
-            >
-              {/* Product image placeholder — grey box */}
-              <div className="aspect-square bg-surface rounded-xl overflow-hidden mb-3
-                              border border-border group-hover:border-accent/30 transition-colors">
-                <div className="w-full h-full flex items-center justify-center">
-                  {/* Placeholder car icon — replaced with actual product images later */}
-                  <svg className="w-16 h-16 text-text-muted/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1}
-                      d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1}
-                      d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
-                  </svg>
+          {displayProducts.length === 0 ? (
+            <p className="text-text-muted text-sm py-8">No products yet — check back soon!</p>
+          ) : (
+            displayProducts.map((product) => (
+              <Link
+                key={product.id}
+                href={`/${lang}/products/${product.brand}/${product.slug}`}
+                className="group flex-shrink-0 w-[200px] sm:w-[240px] snap-start"
+              >
+                {/* Product image */}
+                <div className="aspect-square bg-surface rounded-xl overflow-hidden mb-3
+                                border border-border group-hover:border-accent/30 transition-colors">
+                  {product.photo ? (
+                    <img
+                      src={product.photo}
+                      alt={lang === "my" ? product.name_my : product.name_en}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <svg className="w-16 h-16 text-text-muted/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1}
+                          d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1}
+                          d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
-              </div>
 
-              {/* Product info */}
-              <p className="text-text-secondary text-xs uppercase tracking-wider mb-1">
-                {product.brand.replace("-", " ")}
-              </p>
-              <h3 className="text-text-primary text-sm font-medium line-clamp-2 mb-1
-                             group-hover:text-accent transition-colors">
-                {lang === "my" ? product.name_my : product.name_en}
-              </h3>
-              <p className="text-accent font-semibold text-sm">
-                {formatPrice(product.price)}
-              </p>
-            </Link>
-          ))}
+                {/* Product info */}
+                <p className="text-text-secondary text-xs uppercase tracking-wider mb-1">
+                  {product.brand.replace("-", " ")}
+                </p>
+                <h3 className="text-text-primary text-sm font-medium line-clamp-2 mb-1
+                               group-hover:text-accent transition-colors">
+                  {lang === "my" ? product.name_my : product.name_en}
+                </h3>
+                <p className="text-accent font-semibold text-sm">
+                  {formatPrice(product.price)}
+                </p>
+              </Link>
+            ))
+          )}
         </div>
 
-        {/* Mobile "View All" link — shown below the strip on small screens */}
+        {/* Mobile "View All" link */}
         <div className="sm:hidden mt-4 text-center">
           <Link
             href={`/${lang}/products/new-arrivals`}

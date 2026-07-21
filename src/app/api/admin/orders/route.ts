@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // GET /api/admin/orders — list all orders with optional status filter
 // Returns orders with their line items attached
 import { NextResponse } from "next/server";

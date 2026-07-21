@@ -1,25 +1,19 @@
-// Admin Products page — product list with search, filters, and actions
-// Will connect to Supabase for real CRUD operations
+// Admin Products page — product list with real data from Drizzle
+// Server component — queries Turso directly
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { hasLocale } from "../../dictionaries";
 import { formatPrice } from "@/lib/format";
+import { db } from "@/lib/drizzle";
+import { products } from "@/lib/schema";
+import { desc, eq, count } from "drizzle-orm";
+
+// Force dynamic rendering — products page queries the database
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Products — Admin — Collector In Town",
 };
-
-// Placeholder products
-const PRODUCTS = [
-  { id: "1", name: "Nissan GT-R R35 Liberty Walk", brand: "Mini GT", scale: "1:64", price: 45000, stock: 15, status: "active" },
-  { id: "2", name: "Porsche 911 GT3 RS", brand: "Mini GT", scale: "1:64", price: 52000, stock: 8, status: "active" },
-  { id: "3", name: "Toyota AE86 Sprinter Trueno", brand: "Hot Wheels", scale: "1:64", price: 12000, stock: 25, status: "active" },
-  { id: "4", name: "Mazda RX-7 FD3S Spirit R", brand: "Hot Wheels", scale: "1:64", price: 15000, stock: 20, status: "active" },
-  { id: "5", name: "Honda Civic Type-R EK9", brand: "Inno64", scale: "1:64", price: 38000, stock: 10, status: "active" },
-  { id: "6", name: "Mitsubishi Lancer Evolution III", brand: "Inno64", scale: "1:64", price: 42000, stock: 6, status: "active" },
-  { id: "7", name: "Nissan Skyline GT-R R34 V-Spec II", brand: "Pop Race", scale: "1:64", price: 35000, stock: 12, status: "active" },
-  { id: "8", name: "Toyota Supra A80 TRD", brand: "Pop Race", scale: "1:64", price: 32000, stock: 0, status: "sold_out" },
-];
 
 export default async function AdminProductsPage({
   params,
@@ -28,6 +22,27 @@ export default async function AdminProductsPage({
 }) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
+
+  // Fetch all products ordered by newest first (admin sees ALL statuses)
+  const allProducts = await db
+    .select()
+    .from(products)
+    .orderBy(desc(products.createdAt));
+
+  // Count active and sold_out for the stats bar
+  const [activeCount] = await db.select({ count: count() }).from(products).where(eq(products.status, "active"));
+  const [soldOutCount] = await db.select({ count: count() }).from(products).where(eq(products.status, "sold_out"));
+
+  // Helper: status badge styling
+  const statusBadge = (status: string) => {
+    switch (status) {
+      case "active": return "bg-success/10 text-success";
+      case "draft": return "bg-blue-500/10 text-blue-400";
+      case "sold_out": return "bg-error/10 text-error";
+      case "discontinued": return "bg-surface text-text-muted";
+      default: return "bg-surface text-text-muted";
+    }
+  };
 
   return (
     <div>
@@ -49,15 +64,15 @@ export default async function AdminProductsPage({
       <div className="flex gap-4 mb-6">
         <div className="bg-surface rounded-lg border border-border px-4 py-2 text-sm">
           <span className="text-text-muted">Total: </span>
-          <span className="text-text-primary font-medium">{PRODUCTS.length}</span>
+          <span className="text-text-primary font-medium">{allProducts.length}</span>
         </div>
         <div className="bg-surface rounded-lg border border-border px-4 py-2 text-sm">
           <span className="text-text-muted">Active: </span>
-          <span className="text-success font-medium">{PRODUCTS.filter(p => p.status === "active").length}</span>
+          <span className="text-success font-medium">{activeCount?.count || 0}</span>
         </div>
         <div className="bg-surface rounded-lg border border-border px-4 py-2 text-sm">
           <span className="text-text-muted">Sold Out: </span>
-          <span className="text-error font-medium">{PRODUCTS.filter(p => p.status === "sold_out").length}</span>
+          <span className="text-error font-medium">{soldOutCount?.count || 0}</span>
         </div>
       </div>
 
@@ -77,35 +92,42 @@ export default async function AdminProductsPage({
               </tr>
             </thead>
             <tbody>
-              {PRODUCTS.map((product) => (
-                <tr key={product.id} className="border-b border-border last:border-0 hover:bg-surface-hover/50 transition-colors">
-                  <td className="px-5 py-3">
-                    <p className="text-text-primary font-medium">{product.name}</p>
-                  </td>
-                  <td className="px-5 py-3 text-text-secondary">{product.brand}</td>
-                  <td className="px-5 py-3 text-text-secondary">{product.scale}</td>
-                  <td className="px-5 py-3 text-right text-text-primary">{formatPrice(product.price)}</td>
-                  <td className="px-5 py-3 text-right">
-                    <span className={`font-medium ${product.stock === 0 ? "text-error" : product.stock <= 10 ? "text-orange-400" : "text-text-primary"}`}>
-                      {product.stock}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-center">
-                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full
-                      ${product.status === "active" ? "bg-success/10 text-success" : "bg-error/10 text-error"}`}>
-                      {product.status === "active" ? "Active" : "Sold Out"}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-right">
-                    <Link
-                      href={`/${lang}/admin/products/${product.id}`}
-                      className="text-accent text-xs hover:underline"
-                    >
-                      Edit
-                    </Link>
+              {allProducts.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-5 py-8 text-center text-text-muted">
+                    No products yet. Click &quot;+ Add Product&quot; to create one.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                allProducts.map((product) => (
+                  <tr key={product.id} className="border-b border-border last:border-0 hover:bg-surface-hover/50 transition-colors">
+                    <td className="px-5 py-3">
+                      <p className="text-text-primary font-medium">{product.nameEn}</p>
+                    </td>
+                    <td className="px-5 py-3 text-text-secondary capitalize">{product.brand.replace("-", " ")}</td>
+                    <td className="px-5 py-3 text-text-secondary">{product.scale}</td>
+                    <td className="px-5 py-3 text-right text-text-primary">{formatPrice(product.price)}</td>
+                    <td className="px-5 py-3 text-right">
+                      <span className={`font-medium ${product.stockCount === 0 ? "text-error" : product.stockCount <= 10 ? "text-orange-400" : "text-text-primary"}`}>
+                        {product.stockCount}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 text-center">
+                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full capitalize ${statusBadge(product.status)}`}>
+                        {product.status.replace("_", " ")}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <Link
+                        href={`/${lang}/admin/products/${product.id}`}
+                        className="text-accent text-xs hover:underline"
+                      >
+                        Edit
+                      </Link>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

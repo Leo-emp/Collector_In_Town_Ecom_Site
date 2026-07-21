@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // GET /api/admin/products — list all products for admin (includes all statuses)
 // POST /api/admin/products — create a new product
 import { NextResponse } from "next/server";

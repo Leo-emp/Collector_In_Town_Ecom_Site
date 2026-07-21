@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // GET /api/admin/delivery-zones — list all delivery zones
 // Admin can see all zones including inactive ones
 import { NextResponse } from "next/server";

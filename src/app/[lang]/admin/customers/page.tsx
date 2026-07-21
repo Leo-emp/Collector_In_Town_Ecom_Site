@@ -1,27 +1,43 @@
-// Admin Customers page — customer list with order counts
+// Admin Customers page — aggregated customer list from orders
+// Server component — queries Turso directly
+// Customers are derived from orders (no separate customer table)
 import { notFound } from "next/navigation";
 import { hasLocale } from "../../dictionaries";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, formatDate } from "@/lib/format";
+import { db } from "@/lib/drizzle";
+import { orders } from "@/lib/schema";
+import { count, sum, min, sql } from "drizzle-orm";
+
+// Force dynamic rendering — customers page queries the database
+export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Customers — Admin — Collector In Town" };
-
-const CUSTOMERS = [
-  { id: "1", name: "Aung Kyaw", email: "aung@email.com", phone: "09-111-222-333", orders: 5, total_spent: 425000, joined: "2026-06-01" },
-  { id: "2", name: "Thiri Htun", email: "thiri@email.com", phone: "09-222-333-444", orders: 3, total_spent: 195000, joined: "2026-06-15" },
-  { id: "3", name: "Min Thet", email: "min@email.com", phone: "09-333-444-555", orders: 8, total_spent: 680000, joined: "2026-05-20" },
-  { id: "4", name: "Nay Win", email: "nay@email.com", phone: "09-444-555-666", orders: 1, total_spent: 52000, joined: "2026-07-18" },
-  { id: "5", name: "Su Myat", email: "su@email.com", phone: "09-555-666-777", orders: 2, total_spent: 97000, joined: "2026-07-10" },
-];
 
 export default async function AdminCustomersPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
 
+  // Aggregate customer data from orders — group by email
+  // Each unique email = one customer, with their total orders and spend
+  const customers = await db
+    .select({
+      email: orders.customerEmail,
+      name: orders.customerName,
+      phone: orders.customerPhone,
+      orderCount: count(),
+      totalSpent: sum(orders.total),
+      // First order date = when they "joined"
+      firstOrder: min(orders.createdAt),
+    })
+    .from(orders)
+    .groupBy(orders.customerEmail)
+    .orderBy(sql`count(*) desc`);
+
   return (
     <div>
       <h1 className="font-[family-name:var(--font-cinzel)] text-2xl text-text-primary mb-6">Customers</h1>
 
-      <p className="text-text-muted text-sm mb-6">{CUSTOMERS.length} registered customers</p>
+      <p className="text-text-muted text-sm mb-6">{customers.length} unique customer{customers.length !== 1 ? "s" : ""}</p>
 
       <div className="bg-surface rounded-xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
@@ -32,22 +48,30 @@ export default async function AdminCustomersPage({ params }: { params: Promise<{
                 <th className="text-left text-text-muted font-medium px-5 py-3">Phone</th>
                 <th className="text-center text-text-muted font-medium px-5 py-3">Orders</th>
                 <th className="text-right text-text-muted font-medium px-5 py-3">Total Spent</th>
-                <th className="text-right text-text-muted font-medium px-5 py-3">Joined</th>
+                <th className="text-right text-text-muted font-medium px-5 py-3">First Order</th>
               </tr>
             </thead>
             <tbody>
-              {CUSTOMERS.map((c) => (
-                <tr key={c.id} className="border-b border-border last:border-0 hover:bg-surface-hover/50 transition-colors">
-                  <td className="px-5 py-3">
-                    <p className="text-text-primary font-medium">{c.name}</p>
-                    <p className="text-text-muted text-xs">{c.email}</p>
+              {customers.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-5 py-8 text-center text-text-muted">
+                    No customers yet — they&apos;ll appear here after the first order
                   </td>
-                  <td className="px-5 py-3 text-text-secondary">{c.phone}</td>
-                  <td className="px-5 py-3 text-center text-text-primary">{c.orders}</td>
-                  <td className="px-5 py-3 text-right text-accent font-medium">{formatPrice(c.total_spent)}</td>
-                  <td className="px-5 py-3 text-right text-text-muted">{c.joined}</td>
                 </tr>
-              ))}
+              ) : (
+                customers.map((c) => (
+                  <tr key={c.email} className="border-b border-border last:border-0 hover:bg-surface-hover/50 transition-colors">
+                    <td className="px-5 py-3">
+                      <p className="text-text-primary font-medium">{c.name}</p>
+                      <p className="text-text-muted text-xs">{c.email}</p>
+                    </td>
+                    <td className="px-5 py-3 text-text-secondary">{c.phone}</td>
+                    <td className="px-5 py-3 text-center text-text-primary">{c.orderCount}</td>
+                    <td className="px-5 py-3 text-right text-accent font-medium">{formatPrice(Number(c.totalSpent) || 0)}</td>
+                    <td className="px-5 py-3 text-right text-text-muted">{c.firstOrder ? formatDate(c.firstOrder) : "—"}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

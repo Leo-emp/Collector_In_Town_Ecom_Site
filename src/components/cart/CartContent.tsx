@@ -1,24 +1,26 @@
-// CartContent — client component that renders the cart items and summary
-// Separated from the cart page (server component) because it needs CartContext
+// CartContent — client component that renders cart items and summary
+// Fetches real product data from the API to resolve cart item IDs
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { CartItemRow } from "./CartItemRow";
 import { CartSummary } from "./CartSummary";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 
-// Placeholder product catalog — same data used across pages until Supabase is connected
-const PRODUCT_CATALOG = [
-  { id: "1", name_en: "Nissan GT-R R35 Liberty Walk", name_my: "နစ်ဆန် GT-R R35 Liberty Walk", slug: "nissan-gtr-r35-liberty-walk", brand: "mini-gt", scale: "1:64", price: 45000, photos: [] as string[], stock_count: 15 },
-  { id: "2", name_en: "Porsche 911 GT3 RS", name_my: "ပေါ့ရှ 911 GT3 RS", slug: "porsche-911-gt3-rs", brand: "mini-gt", scale: "1:64", price: 52000, photos: [] as string[], stock_count: 8 },
-  { id: "3", name_en: "Toyota AE86 Sprinter Trueno", name_my: "တိုယိုတာ AE86 Sprinter Trueno", slug: "toyota-ae86-sprinter-trueno", brand: "hot-wheels", scale: "1:64", price: 12000, photos: [] as string[], stock_count: 25 },
-  { id: "4", name_en: "Mazda RX-7 FD3S Spirit R", name_my: "မဇ်ဒါ RX-7 FD3S Spirit R", slug: "mazda-rx7-fd3s-spirit-r", brand: "hot-wheels", scale: "1:64", price: 15000, photos: [] as string[], stock_count: 20 },
-  { id: "5", name_en: "Honda Civic Type-R EK9", name_my: "ဟွန်ဒါ Civic Type-R EK9", slug: "honda-civic-type-r-ek9", brand: "inno64", scale: "1:64", price: 38000, photos: [] as string[], stock_count: 10 },
-  { id: "6", name_en: "Mitsubishi Lancer Evolution III", name_my: "မစ်ဆူဘီရှီ Lancer Evolution III", slug: "mitsubishi-lancer-evo-iii", brand: "inno64", scale: "1:64", price: 42000, photos: [] as string[], stock_count: 6 },
-  { id: "7", name_en: "Nissan Skyline GT-R R34 V-Spec II", name_my: "နစ်ဆန် Skyline GT-R R34 V-Spec II", slug: "nissan-skyline-gtr-r34-vspec-ii", brand: "pop-race", scale: "1:64", price: 35000, photos: [] as string[], stock_count: 12 },
-  { id: "8", name_en: "Toyota Supra A80 TRD", name_my: "တိုယိုတာ Supra A80 TRD", slug: "toyota-supra-a80-trd", brand: "pop-race", scale: "1:64", price: 32000, photos: [] as string[], stock_count: 0 },
-];
+// Product data shape from the API
+interface ProductData {
+  id: string;
+  nameEn: string;
+  nameMy: string | null;
+  slug: string;
+  brand: string;
+  scale: string;
+  price: number;
+  stockCount: number;
+  images: Array<{ url: string }>;
+}
 
 interface CartContentProps {
   lang: string;
@@ -27,20 +29,68 @@ interface CartContentProps {
 
 export function CartContent({ lang, dict }: CartContentProps) {
   const { items } = useCart();
+  // Product data fetched from the API
+  const [productMap, setProductMap] = useState<Map<string, ProductData>>(new Map());
+  const [loading, setLoading] = useState(true);
+
+  // Fetch product data for all cart items
+  useEffect(() => {
+    if (items.length === 0) {
+      setLoading(false);
+      return;
+    }
+
+    const ids = items.map((i) => i.productId).join(",");
+    fetch(`/api/products?ids=${ids}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const map = new Map<string, ProductData>();
+        for (const p of data.products || []) {
+          map.set(p.id, p);
+        }
+        setProductMap(map);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [items]);
 
   // Resolve cart items to full product data
   const cartProducts = items
     .map((item) => {
-      const product = PRODUCT_CATALOG.find((p) => p.id === item.productId);
-      return product ? { product, quantity: item.quantity } : null;
+      const p = productMap.get(item.productId);
+      if (!p) return null;
+      // Map API response to the format CartItemRow expects
+      return {
+        product: {
+          id: p.id,
+          name_en: p.nameEn,
+          name_my: p.nameMy || p.nameEn,
+          slug: p.slug,
+          brand: p.brand,
+          scale: p.scale,
+          price: p.price,
+          photos: p.images?.map((img) => img.url) || [],
+          stock_count: p.stockCount,
+        },
+        quantity: item.quantity,
+      };
     })
-    .filter(Boolean) as { product: (typeof PRODUCT_CATALOG)[number]; quantity: number }[];
+    .filter(Boolean) as { product: { id: string; name_en: string; name_my: string; slug: string; brand: string; scale: string; price: number; photos: string[]; stock_count: number }; quantity: number }[];
 
   // Calculate subtotal
   const subtotal = cartProducts.reduce(
     (sum, { product, quantity }) => sum + product.price * quantity,
     0
   );
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (cartProducts.length === 0) {
     return (

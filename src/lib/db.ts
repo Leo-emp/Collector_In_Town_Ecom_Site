@@ -11,12 +11,13 @@ let _turso: Client | null = null;
 function getTurso(): Client {
   if (_turso) return _turso;
 
-  // Local dev uses file:local.db; production MUST have Turso URL set
-  const isProduction = process.env.NODE_ENV === "production";
-  const dbUrl = process.env.TURSO_DATABASE_URL || (isProduction ? undefined : "file:local.db");
+  // Local dev uses file:local.db; production uses Turso cloud URL
+  const dbUrl = process.env.TURSO_DATABASE_URL || (process.env.NODE_ENV !== "production" ? "file:local.db" : undefined);
 
+  // During Next.js build (no env vars), throw a clear error at runtime
+  // This should never happen in Vercel because env vars are set there
   if (!dbUrl) {
-    throw new Error("TURSO_DATABASE_URL is required in production — set it in Vercel environment variables");
+    throw new Error("TURSO_DATABASE_URL is required — set it in Vercel environment variables");
   }
 
   _turso = createClient({

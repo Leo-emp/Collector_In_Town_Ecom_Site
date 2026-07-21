@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // GET /api/admin/dashboard — aggregated stats for the admin dashboard
 // Returns: revenue, order count, product count, customer count, recent orders, low stock
 import { NextResponse } from "next/server";

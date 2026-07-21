@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // GET /api/admin/settings — get all site settings as a key-value object
 // PUT /api/admin/settings — upsert site settings from a key-value object
 import { NextResponse } from "next/server";

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // GET /api/products/[slug] — single product with images
 // Public endpoint — used by product detail page
 import { NextResponse } from "next/server";

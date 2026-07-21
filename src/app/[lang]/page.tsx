@@ -1,5 +1,8 @@
 // Landing page — the main entry point for the site
 // Composes Hero, 3D Showcase (placeholder), New Arrivals, Brand Story, and Brand Logos
+// Force dynamic rendering — NewArrivalsStrip queries the database
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import { getDictionary, hasLocale } from "./dictionaries";
 import { HeroSection } from "@/components/landing/HeroSection";

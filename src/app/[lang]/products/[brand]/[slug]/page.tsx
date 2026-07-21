@@ -1,4 +1,5 @@
 // Product detail page — full product info with gallery, specs, and related items
+// Server component — queries Turso directly via Drizzle
 // Route: /en/products/mini-gt/nissan-gtr-r35-liberty-walk
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -7,32 +8,31 @@ import { formatPrice } from "@/lib/format";
 import { PhotoGallery } from "@/components/product/PhotoGallery";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
 import { ProductCard } from "@/components/catalog/ProductCard";
+import { db } from "@/lib/drizzle";
+import { products, productImages } from "@/lib/schema";
+import { eq, and, ne, or } from "drizzle-orm";
 import type { Metadata } from "next";
 
-// Placeholder product data — will be replaced with Supabase query
-const PLACEHOLDER_PRODUCTS = [
-  { id: "1", name_en: "Nissan GT-R R35 Liberty Walk", name_my: "နစ်ဆန် GT-R R35 Liberty Walk", slug: "nissan-gtr-r35-liberty-walk", brand: "mini-gt", scale: "1:64", price: 45000, description_en: "Mini GT 1:64 scale Nissan GT-R R35 with Liberty Walk body kit. Metallic blue finish with detailed interior and opening doors.", description_my: "Mini GT 1:64 စကေး နစ်ဆန် GT-R R35 Liberty Walk ကိုယ်ထည်ကစ်ပါ။ အပြာရောင် metallic finish ဖြင့် အတွင်းပိုင်းအသေးစိတ်ပါ။", photos: [] as string[], stock_count: 15, status: "active" },
-  { id: "2", name_en: "Porsche 911 GT3 RS", name_my: "ပေါ့ရှ 911 GT3 RS", slug: "porsche-911-gt3-rs", brand: "mini-gt", scale: "1:64", price: 52000, description_en: "Mini GT 1:64 Porsche 911 GT3 RS in Guards Red. Opening hood reveals detailed flat-six engine.", description_my: "Mini GT 1:64 ပေါ့ရှ 911 GT3 RS Guards Red အနီရောင်။", photos: [] as string[], stock_count: 8, status: "active" },
-  { id: "3", name_en: "Toyota AE86 Sprinter Trueno", name_my: "တိုယိုတာ AE86 Sprinter Trueno", slug: "toyota-ae86-sprinter-trueno", brand: "hot-wheels", scale: "1:64", price: 12000, description_en: "Hot Wheels premium Toyota AE86 from the Japan Historics series. White and black panda colorway with Real Riders rubber tires.", description_my: "Hot Wheels ပရီမီယံ တိုယိုတာ AE86 Japan Historics စီးရီး။", photos: [] as string[], stock_count: 25, status: "active" },
-  { id: "4", name_en: "Mazda RX-7 FD3S Spirit R", name_my: "မဇ်ဒါ RX-7 FD3S Spirit R", slug: "mazda-rx7-fd3s-spirit-r", brand: "hot-wheels", scale: "1:64", price: 15000, description_en: "Hot Wheels premium Mazda RX-7 FD3S Spirit R in brilliant red. Real Riders rubber tires and detailed rotary engine.", description_my: "Hot Wheels ပရီမီယံ မဇ်ဒါ RX-7 FD3S Spirit R အနီရောင်။", photos: [] as string[], stock_count: 20, status: "active" },
-  { id: "5", name_en: "Honda Civic Type-R EK9", name_my: "ဟွန်ဒါ Civic Type-R EK9", slug: "honda-civic-type-r-ek9", brand: "inno64", scale: "1:64", price: 38000, description_en: "Inno64 Honda Civic Type-R EK9 in Championship White. Highly detailed with opening hood and Mugen accessories.", description_my: "Inno64 ဟွန်ဒါ Civic Type-R EK9 Championship White အဖြူရောင်။", photos: [] as string[], stock_count: 10, status: "active" },
-  { id: "6", name_en: "Mitsubishi Lancer Evolution III", name_my: "မစ်ဆူဘီရှီ Lancer Evolution III", slug: "mitsubishi-lancer-evo-iii", brand: "inno64", scale: "1:64", price: 42000, description_en: "Inno64 Mitsubishi Lancer Evolution III in Dandelion Yellow. Rally-spec with roof scoop and Enkei wheels.", description_my: "Inno64 မစ်ဆူဘီရှီ Lancer Evolution III Dandelion Yellow အဝါရောင်။", photos: [] as string[], stock_count: 6, status: "active" },
-  { id: "7", name_en: "Nissan Skyline GT-R R34 V-Spec II", name_my: "နစ်ဆန် Skyline GT-R R34 V-Spec II", slug: "nissan-skyline-gtr-r34-vspec-ii", brand: "pop-race", scale: "1:64", price: 35000, description_en: "Pop Race Nissan Skyline GT-R R34 V-Spec II in Bayside Blue. Chrome Nismo bumper, detailed undercarriage, and Brembo brakes.", description_my: "Pop Race နစ်ဆန် Skyline GT-R R34 V-Spec II Bayside Blue အပြာရောင်။", photos: [] as string[], stock_count: 12, status: "active" },
-  { id: "8", name_en: "Toyota Supra A80 TRD", name_my: "တိုယိုတာ Supra A80 TRD", slug: "toyota-supra-a80-trd", brand: "pop-race", scale: "1:64", price: 32000, description_en: "Pop Race Toyota Supra A80 with TRD 3000GT wing in Super White II. Recaro interior and Rays TE37 wheels.", description_my: "Pop Race တိုယိုတာ Supra A80 TRD 3000GT wing Super White II အဖြူရောင်။", photos: [] as string[], stock_count: 0, status: "sold_out" },
-];
+// Force dynamic rendering — product detail queries the database
+export const dynamic = "force-dynamic";
 
-// Dynamic metadata from product data
+// Dynamic metadata from real product data
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ lang: string; brand: string; slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const product = PLACEHOLDER_PRODUCTS.find((p) => p.slug === slug);
+  // Look up product by slug for title/description
+  const [product] = await db
+    .select()
+    .from(products)
+    .where(eq(products.slug, slug));
+
   if (!product) return { title: "Product Not Found" };
   return {
-    title: `${product.name_en} — Collector In Town`,
-    description: product.description_en,
+    title: `${product.nameEn} — Collector In Town`,
+    description: product.descriptionEn || undefined,
   };
 }
 
@@ -47,19 +47,66 @@ export default async function ProductPage({
 
   const dict = await getDictionary(lang);
 
-  // Find the product by slug
-  const product = PLACEHOLDER_PRODUCTS.find((p) => p.slug === slug);
+  // Fetch the product by URL slug
+  const [product] = await db
+    .select()
+    .from(products)
+    .where(eq(products.slug, slug));
+
+  // 404 if product doesn't exist
   if (!product) notFound();
 
+  // Fetch images for this product, ordered by display_order
+  const images = await db
+    .select()
+    .from(productImages)
+    .where(eq(productImages.productId, product.id))
+    .orderBy(productImages.displayOrder);
+
+  // Extract image URLs for the photo gallery
+  const photoUrls = images.map((img) => img.url);
+
   // Get display values based on locale
-  const name = lang === "my" ? product.name_my : product.name_en;
-  const description = lang === "my" ? product.description_my : product.description_en;
-  const isInStock = product.stock_count > 0 && product.status === "active";
+  const name = lang === "my" && product.nameMy ? product.nameMy : product.nameEn;
+  const description = lang === "my" && product.descriptionMy
+    ? product.descriptionMy
+    : product.descriptionEn;
+  const isInStock = product.stockCount > 0 && product.status === "active";
 
   // Related products — up to 4 from the same brand, excluding current product
-  const relatedProducts = PLACEHOLDER_PRODUCTS
-    .filter((p) => p.brand === product.brand && p.id !== product.id)
-    .slice(0, 4);
+  const relatedRaw = await db
+    .select()
+    .from(products)
+    .where(
+      and(
+        eq(products.brand, product.brand),
+        ne(products.id, product.id),
+        or(eq(products.status, "active"), eq(products.status, "sold_out"))
+      )
+    )
+    .limit(4);
+
+  // Fetch images for related products
+  const relatedIds = relatedRaw.map((p) => p.id);
+  const relatedImages = relatedIds.length > 0
+    ? await db.select().from(productImages).orderBy(productImages.displayOrder)
+    : [];
+
+  // Map related products to ProductCard format
+  const relatedProducts = relatedRaw.map((p) => {
+    const imgs = relatedImages.filter((img) => img.productId === p.id);
+    return {
+      id: p.id,
+      name_en: p.nameEn,
+      name_my: p.nameMy || p.nameEn,
+      slug: p.slug,
+      brand: p.brand,
+      price: p.price,
+      photos: imgs.map((img) => img.url),
+      stock_count: p.stockCount,
+      status: p.status,
+    };
+  });
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -82,7 +129,7 @@ export default async function ProductPage({
       {/* Product layout — 2 columns on desktop */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
         {/* Left column: Photo gallery */}
-        <PhotoGallery photos={product.photos} productName={name} />
+        <PhotoGallery photos={photoUrls} productName={name} />
 
         {/* Right column: Product info */}
         <div>
@@ -134,14 +181,16 @@ export default async function ProductPage({
           </div>
 
           {/* Description */}
-          <div className="border-t border-border pt-6">
-            <h2 className="text-text-primary font-semibold mb-3">
-              {dict.product.description}
-            </h2>
-            <p className="text-text-secondary leading-relaxed">
-              {description}
-            </p>
-          </div>
+          {description && (
+            <div className="border-t border-border pt-6">
+              <h2 className="text-text-primary font-semibold mb-3">
+                {dict.product.description}
+              </h2>
+              <p className="text-text-secondary leading-relaxed">
+                {description}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 // GET /api/orders/track?token=xxx — guest order tracking
 // Allows customers to check their order status using the tracking token
 // Returns limited info (no admin notes, no internal IDs)
