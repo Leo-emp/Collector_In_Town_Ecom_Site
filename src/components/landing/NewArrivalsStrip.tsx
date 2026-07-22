@@ -13,32 +13,47 @@ interface NewArrivalsStripProps {
 }
 
 export async function NewArrivalsStrip({ lang, dict }: NewArrivalsStripProps) {
-  // Fetch the 8 newest active/sold_out products
-  const productList = await db
-    .select()
-    .from(products)
-    .where(or(eq(products.status, "active"), eq(products.status, "sold_out")))
-    .orderBy(desc(products.createdAt))
-    .limit(8);
+  // Try to fetch products — gracefully show empty state if DB isn't configured yet
+  let displayProducts: {
+    id: string;
+    name_en: string;
+    name_my: string;
+    slug: string;
+    brand: string;
+    price: number;
+    photo: string | null;
+  }[] = [];
 
-  // Fetch images for these products
-  const allImages = productList.length > 0
-    ? await db.select().from(productImages).orderBy(productImages.displayOrder)
-    : [];
+  try {
+    // Fetch the 8 newest active/sold_out products
+    const productList = await db
+      .select()
+      .from(products)
+      .where(or(eq(products.status, "active"), eq(products.status, "sold_out")))
+      .orderBy(desc(products.createdAt))
+      .limit(8);
 
-  // Map products with their first image URL
-  const displayProducts = productList.map((p) => {
-    const imgs = allImages.filter((img) => img.productId === p.id);
-    return {
-      id: p.id,
-      name_en: p.nameEn,
-      name_my: p.nameMy || p.nameEn,
-      slug: p.slug,
-      brand: p.brand,
-      price: p.price,
-      photo: imgs[0]?.url || null,
-    };
-  });
+    // Fetch images for these products
+    const allImages = productList.length > 0
+      ? await db.select().from(productImages).orderBy(productImages.displayOrder)
+      : [];
+
+    // Map products with their first image URL
+    displayProducts = productList.map((p) => {
+      const imgs = allImages.filter((img) => img.productId === p.id);
+      return {
+        id: p.id,
+        name_en: p.nameEn,
+        name_my: p.nameMy || p.nameEn,
+        slug: p.slug,
+        brand: p.brand,
+        price: p.price,
+        photo: imgs[0]?.url || null,
+      };
+    });
+  } catch {
+    // DB not configured yet — show empty state instead of crashing the page
+  }
 
   return (
     <section className="py-16 px-4">
