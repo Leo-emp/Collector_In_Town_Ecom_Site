@@ -2,12 +2,14 @@
 // Server component — queries Turso directly via Drizzle
 // Routes: /en/products/mini-gt, /en/products/hot-wheels, etc.
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { Suspense } from "react";
 import { getDictionary, hasLocale } from "../../dictionaries";
 import { BRANDS, BRAND_SLUGS, PRODUCTS_PER_PAGE } from "@/lib/constants";
 import { ProductCard } from "@/components/catalog/ProductCard";
 import { CatalogToolbar } from "@/components/catalog/CatalogToolbar";
 import { Pagination } from "@/components/catalog/Pagination";
+import { verifyAdminSession } from "@/lib/admin-auth";
 import { db } from "@/lib/drizzle";
 import { products, productImages } from "@/lib/schema";
 import { eq, like, desc, asc, and, or, count } from "drizzle-orm";
@@ -118,16 +120,30 @@ export default async function CatalogPage({
     };
   });
 
+  // Check if user is admin — show "Add Product" button only for admins
+  const isAdmin = await verifyAdminSession();
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Page header — brand name */}
-      <div className="mb-6">
-        <h1 className="font-[family-name:var(--font-cinzel)] text-3xl md:text-4xl text-text-primary">
-          {pageTitle}
-        </h1>
-        <p className="text-text-secondary mt-2 text-sm">
-          {totalProducts} {totalProducts === 1 ? "model" : "models"}
-        </p>
+      {/* Page header — brand name + admin add button */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="font-[family-name:var(--font-cinzel)] text-3xl md:text-4xl text-text-primary">
+            {pageTitle}
+          </h1>
+          <p className="text-text-secondary mt-2 text-sm">
+            {totalProducts} {totalProducts === 1 ? "model" : "models"}
+          </p>
+        </div>
+        {isAdmin && brand !== "new-arrivals" && (
+          <Link
+            href={`/${lang}/admin/products/new?brand=${brand}`}
+            className="px-4 py-2.5 bg-accent text-background rounded-lg font-semibold text-sm
+                       hover:bg-accent-hover transition-colors"
+          >
+            + Add {brandInfo?.name || "Product"}
+          </Link>
+        )}
       </div>
 
       {/* Search + sort toolbar — wrapped in Suspense for searchParams */}
