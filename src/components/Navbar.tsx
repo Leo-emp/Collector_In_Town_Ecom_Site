@@ -31,8 +31,8 @@ export function Navbar({ lang, dict }: NavbarProps) {
   const pathname = usePathname();
   const { itemCount } = useCart();
 
-  // Hide navbar on admin pages — admin has its own sidebar layout
-  if (pathname.includes("/admin")) return null;
+  // Hide navbar on admin, account, and auth pages — they have their own layouts
+  if (pathname.includes("/admin") || pathname.includes("/account") || pathname.includes("/sign-in") || pathname.includes("/sign-up")) return null;
 
   // Check if a nav link is currently active
   const isActive = (href: string) => pathname === href;
