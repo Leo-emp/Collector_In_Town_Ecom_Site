@@ -19,15 +19,15 @@ export function HeroSection({ lang, dict }: HeroSectionProps) {
         draggable={false}
       />
 
-      {/* Dark gradient overlay — makes text readable over the image */}
-      <div className="absolute inset-0 z-[1] bg-gradient-to-t from-background via-background/60 to-transparent" />
+      {/* Dark gradient overlay — always dark regardless of theme so hero stays cinematic */}
+      <div className="absolute inset-0 z-[1] bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/60 to-transparent" />
 
       {/* CTA buttons — positioned at the bottom */}
       <div className="relative z-10 px-4 pb-16 pt-32">
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             href={`/${lang}/products/new-arrivals`}
-            className="bg-accent text-background px-8 py-3.5 rounded-lg font-semibold
+            className="bg-accent text-[#0a0a0a] px-8 py-3.5 rounded-lg font-semibold
                        hover:bg-accent-hover transition-colors text-lg min-w-[200px]
                        shadow-[0_4px_20px_rgba(201,168,76,0.3)]"
           >
@@ -44,7 +44,7 @@ export function HeroSection({ lang, dict }: HeroSectionProps) {
         </div>
       </div>
 
-      {/* Bottom fade — smooth transition to next section */}
+      {/* Bottom fade — blends into the page's actual background color */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent z-[2]" />
     </section>
   );

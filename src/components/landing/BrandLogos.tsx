@@ -24,9 +24,9 @@ export function BrandLogos({ lang, dict }: BrandLogosProps) {
         {/* Decorative divider */}
         <div className="w-12 h-px bg-accent/40 mx-auto mb-12" />
 
-        {/* Brand grid — 5 columns on desktop, 2 on mobile, 3 on tablet */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 md:gap-8">
-          {BRANDS.map((brand) => (
+        {/* Brand grid — 4 columns on desktop, 2 on mobile */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+          {BRANDS.filter((brand) => brand.slug !== "other").map((brand) => (
             <Link
               key={brand.slug}
               href={`/${lang}/products/${brand.slug}`}
@@ -34,26 +34,19 @@ export function BrandLogos({ lang, dict }: BrandLogosProps) {
                          bg-surface/50 rounded-xl border border-border
                          hover:border-accent/30 hover:bg-surface transition-all"
             >
-              {/* Brand logo — centered, large. "Other" shows text instead */}
+              {/* Brand logo — centered, large */}
               <div className="flex items-center justify-center h-24 sm:h-32 w-full">
-                {brand.logo ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={brand.logo}
-                    alt={brand.name}
-                    className={`w-full object-contain
-                               opacity-80 group-hover:opacity-100 transition-all duration-300
-                               ${brand.blendMode === "invert" ? "invert" : ""}
-                               ${brand.slug === "hot-wheels" ? "max-h-32 sm:max-h-40 scale-110" : ""}
-                               ${brand.slug === "pop-race" ? "max-h-16 sm:max-h-20" : ""}
-                               ${brand.slug !== "hot-wheels" && brand.slug !== "pop-race" ? "max-h-24 sm:max-h-32" : ""}`}
-                  />
-                ) : (
-                  <span className="font-[family-name:var(--font-cinzel)] text-2xl text-text-secondary
-                                   group-hover:text-accent transition-colors">
-                    {brand.name}
-                  </span>
-                )}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={brand.logo!}
+                  alt={brand.name}
+                  className={`w-full object-contain
+                             opacity-80 group-hover:opacity-100 transition-all duration-300
+                             ${brand.blendMode === "invert" ? "invert" : ""}
+                             ${brand.slug === "hot-wheels" ? "max-h-32 sm:max-h-40 scale-110" : ""}
+                             ${brand.slug === "pop-race" ? "max-h-16 sm:max-h-20" : ""}
+                             ${brand.slug !== "hot-wheels" && brand.slug !== "pop-race" ? "max-h-24 sm:max-h-32" : ""}`}
+                />
               </div>
 
               {/* "View Collection" link */}
