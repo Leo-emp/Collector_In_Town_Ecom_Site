@@ -1,5 +1,4 @@
 // Drizzle ORM schema — all tables for Collector In Town
-// 8 app tables; Better Auth auto-manages user/session/account/verification
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
@@ -8,6 +7,53 @@ const uuidPk = () =>
   text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID());
+
+// ─── Better Auth Tables ────────────────────────────────
+export const user = sqliteTable("user", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  emailVerified: integer("emailVerified").notNull().default(0),
+  image: text("image"),
+  createdAt: text("createdAt").notNull().default(sql`(current_timestamp)`),
+  updatedAt: text("updatedAt").notNull().default(sql`(current_timestamp)`),
+});
+
+export const session = sqliteTable("session", {
+  id: text("id").primaryKey(),
+  expiresAt: text("expiresAt").notNull(),
+  token: text("token").notNull().unique(),
+  createdAt: text("createdAt").notNull().default(sql`(current_timestamp)`),
+  updatedAt: text("updatedAt").notNull().default(sql`(current_timestamp)`),
+  ipAddress: text("ipAddress"),
+  userAgent: text("userAgent"),
+  userId: text("userId").notNull().references(() => user.id, { onDelete: "cascade" }),
+});
+
+export const account = sqliteTable("account", {
+  id: text("id").primaryKey(),
+  accountId: text("accountId").notNull(),
+  providerId: text("providerId").notNull(),
+  userId: text("userId").notNull().references(() => user.id, { onDelete: "cascade" }),
+  accessToken: text("accessToken"),
+  refreshToken: text("refreshToken"),
+  idToken: text("idToken"),
+  accessTokenExpiresAt: text("accessTokenExpiresAt"),
+  refreshTokenExpiresAt: text("refreshTokenExpiresAt"),
+  scope: text("scope"),
+  password: text("password"),
+  createdAt: text("createdAt").notNull().default(sql`(current_timestamp)`),
+  updatedAt: text("updatedAt").notNull().default(sql`(current_timestamp)`),
+});
+
+export const verification = sqliteTable("verification", {
+  id: text("id").primaryKey(),
+  identifier: text("identifier").notNull(),
+  value: text("value").notNull(),
+  expiresAt: text("expiresAt").notNull(),
+  createdAt: text("createdAt").notNull().default(sql`(current_timestamp)`),
+  updatedAt: text("updatedAt").notNull().default(sql`(current_timestamp)`),
+});
 
 // ─── Products ───────────────────────────────────────────
 // Diecast car catalog — each row is one SKU
