@@ -4,6 +4,7 @@ export const BRANDS = [
   { slug: "hot-wheels", name: "Hot Wheels", logo: "/images/brands/hot-wheels.png", blendMode: "none" as const },
   { slug: "inno64", name: "Inno64", logo: "/images/brands/inno64.svg", blendMode: "none" as const },
   { slug: "pop-race", name: "Pop Race", logo: "/images/brands/pop-race.png", blendMode: "none" as const },
+  { slug: "other", name: "Other", logo: null, blendMode: "none" as const },
 ] as const;
 
 // Valid brand slug values — used in Zod validation and route matching

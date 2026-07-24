@@ -22,6 +22,7 @@ const BRAND_NAV_KEYS: Record<string, keyof Dictionary["nav"]> = {
   "hot-wheels": "hotWheels",
   inno64: "inno64",
   "pop-race": "popRace",
+  other: "other",
 };
 
 export function Navbar({ lang, dict }: NavbarProps) {
