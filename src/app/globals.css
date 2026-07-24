@@ -1,34 +1,11 @@
 @import "tailwindcss";
 
 /* ===================================================================
-   Collector In Town — Dual Theme (Light + Dark)
-   Premium diecast car e-commerce store with customer-switchable theme.
+   Collector In Town — Premium Dark Theme
+   Diecast car e-commerce store with dark luxury aesthetic.
    =================================================================== */
 
-/* ─── Light mode (default) ─────────────────────────────────────────── */
 @theme inline {
-  --color-background: #ffffff;
-  --color-surface: #ffffff;
-  --color-surface-hover: #f0eeea;
-  --color-border: #e0ddd6;
-
-  --color-text-primary: #1a1a1a;
-  --color-text-secondary: #555555;
-  --color-text-muted: #888888;
-
-  --color-accent: #b08d35;
-  --color-accent-hover: #9a7a2a;
-
-  --color-success: #16a34a;
-  --color-error: #dc2626;
-  --color-warning: #d97706;
-
-  --font-sans: "Outfit", system-ui, sans-serif;
-  --font-display: "Cinzel", serif;
-}
-
-/* ─── Dark mode (when .dark class is on <html>) ───────────────────── */
-.dark {
   --color-background: #0a0a0a;
   --color-surface: #141414;
   --color-surface-hover: #1a1a1a;
@@ -44,6 +21,9 @@
   --color-success: #22c55e;
   --color-error: #ef4444;
   --color-warning: #f59e0b;
+
+  --font-sans: "Outfit", system-ui, sans-serif;
+  --font-display: "Cinzel", serif;
 }
 
 /* Global body styles */
@@ -53,10 +33,9 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Scrollbar — adapts to theme */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

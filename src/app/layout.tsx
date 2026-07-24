@@ -24,21 +24,7 @@ export default async function RootLayout({
   const lang = headersList.get("x-locale") || "en";
 
   return (
-    <html lang={lang} className={`${outfit.variable} ${cinzel.variable}`} suppressHydrationWarning>
-      <head>
-        {/* Apply saved theme before paint to prevent flash */}
-        <script dangerouslySetInnerHTML={{ __html: `
-          (function(){
-            try {
-              var t = localStorage.getItem('theme');
-              if (t === 'light') return;
-              document.documentElement.classList.add('dark');
-            } catch(e) {
-              document.documentElement.classList.add('dark');
-            }
-          })();
-        `}} />
-      </head>
+    <html lang={lang} className={`${outfit.variable} ${cinzel.variable}`}>
       <body className="min-h-screen bg-background text-text-primary font-[family-name:var(--font-outfit)]">
         {children}
       </body>

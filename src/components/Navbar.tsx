@@ -7,7 +7,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BRANDS } from "@/lib/constants";
 import { LanguageSwitcher } from "./LanguageSwitcher";
-import { ThemeToggle } from "./ThemeToggle";
 import { useCart } from "@/context/CartContext";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 
@@ -92,11 +91,8 @@ export function Navbar({ lang, dict }: NavbarProps) {
             ))}
           </div>
 
-          {/* Right side actions — theme, cart, language, account */}
+          {/* Right side actions — cart, language, account */}
           <div className="flex items-center gap-2">
-            {/* Light/dark mode toggle */}
-            <ThemeToggle />
-
             {/* Language switcher */}
             <LanguageSwitcher lang={lang} dict={dict} />
 
