@@ -1,15 +1,15 @@
-// Better Auth server config — email/password auth with Turso database
-// Tables (user, session, account, verification) are auto-created by Better Auth
+// Better Auth server config — email/password auth with Turso via Drizzle adapter
+// Tables (user, session, account, verification) are auto-managed by Better Auth
 import { betterAuth } from "better-auth";
-import { turso } from "./db";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { db } from "./drizzle";
 
 export const auth = betterAuth({
   baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001",
   secret: process.env.BETTER_AUTH_SECRET,
-  database: {
-    type: "sqlite",
-    db: turso,
-  },
+  database: drizzleAdapter(db, {
+    provider: "sqlite",
+  }),
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
