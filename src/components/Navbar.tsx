@@ -40,14 +40,16 @@ export function Navbar({ lang, dict }: NavbarProps) {
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo — brand name with accent color */}
+          {/* Logo — brand image */}
           <Link
             href={localePath("/")}
-            className="flex items-center gap-2 shrink-0"
+            className="flex items-center shrink-0"
           >
-            <span className="font-[family-name:var(--font-cinzel)] text-xl text-accent font-bold">
-              Collector In Town
-            </span>
+            <img
+              src="/images/logo.jpg"
+              alt="Collector In Town"
+              className="h-12 w-auto"
+            />
           </Link>
 
           {/* Desktop navigation links — hidden on mobile */}
