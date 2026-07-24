@@ -4,7 +4,7 @@
 
 import { use, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BRANDS } from "@/lib/constants";
 
 // Shape of product data from the API
@@ -47,10 +47,14 @@ export default function AdminProductEditPage({
 }) {
   const { lang, id } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const isNew = id === "new";
 
-  // Form state
-  const [form, setForm] = useState(EMPTY_FORM);
+  // Pre-select brand from query param (e.g. /admin/products/new?brand=mini-gt)
+  const preselectedBrand = searchParams.get("brand") || "";
+
+  // Form state — pre-fill brand if coming from a brand-filtered view
+  const [form, setForm] = useState({ ...EMPTY_FORM, brand: preselectedBrand });
   // Product images (only for existing products)
   const [images, setImages] = useState<ProductImage[]>([]);
   // UI state
