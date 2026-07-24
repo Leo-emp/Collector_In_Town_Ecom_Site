@@ -34,7 +34,7 @@ export default async function LocaleLayout({
       <Navbar lang={lang} dict={dict} />
 
       {/* Page content — grows to fill space between nav and footer */}
-      <main className="min-h-[calc(100vh-64px-200px)]">{children}</main>
+      <main className="min-h-[calc(100vh-96px-200px)]">{children}</main>
 
       {/* Site footer — always at bottom */}
       <Footer lang={lang} dict={dict} />

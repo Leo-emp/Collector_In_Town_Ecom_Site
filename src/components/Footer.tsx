@@ -26,9 +26,9 @@ export function Footer({ lang, dict }: FooterProps) {
           <div>
             <Link href={localePath("/")} className="inline-flex items-center gap-3 mb-4">
               <img
-                src="/images/logo.jpg"
+                src="/images/logo.png"
                 alt="Collector In Town"
-                className="h-14 w-auto rounded-sm"
+                className="h-28 w-auto"
               />
               <span className="font-[family-name:var(--font-cinzel)] text-2xl text-accent font-bold">
                 Collector In Town
