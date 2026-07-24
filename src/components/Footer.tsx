@@ -24,12 +24,15 @@ export function Footer({ lang, dict }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {/* Column 1: Brand info */}
           <div>
-            <Link href={localePath("/")} className="inline-block mb-4">
+            <Link href={localePath("/")} className="inline-flex items-center gap-3 mb-4">
               <img
                 src="/images/logo.jpg"
                 alt="Collector In Town"
-                className="h-16 w-auto"
+                className="h-14 w-auto rounded-sm"
               />
+              <span className="font-[family-name:var(--font-cinzel)] text-2xl text-accent font-bold">
+                Collector In Town
+              </span>
             </Link>
             <p className="text-text-secondary text-sm leading-relaxed">
               {dict.footer.description}
