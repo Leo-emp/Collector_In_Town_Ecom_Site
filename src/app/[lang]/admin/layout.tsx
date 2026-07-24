@@ -8,6 +8,7 @@ import Link from "next/link";
 import { getDictionary, hasLocale } from "../dictionaries";
 import { notFound, redirect } from "next/navigation";
 import { verifyAdminSession } from "@/lib/admin-auth";
+import { BRANDS } from "@/lib/constants";
 
 // Admin sidebar nav items — icon SVG paths + route suffixes
 const ADMIN_NAV = [
@@ -67,17 +68,34 @@ export default async function AdminLayout({
         {/* Navigation links */}
         <nav className="p-3 space-y-1">
           {ADMIN_NAV.map((item) => (
-            <Link
-              key={item.key}
-              href={`${basePath}${item.href}`}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary
-                         hover:text-text-primary hover:bg-surface-hover transition-colors"
-            >
-              <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
-              </svg>
-              {NAV_LABELS[item.key]}
-            </Link>
+            <div key={item.key}>
+              <Link
+                href={`${basePath}${item.href}`}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary
+                           hover:text-text-primary hover:bg-surface-hover transition-colors"
+              >
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
+                </svg>
+                {NAV_LABELS[item.key]}
+              </Link>
+
+              {/* Brand sub-links under Products */}
+              {item.key === "products" && (
+                <div className="ml-8 mt-1 space-y-0.5">
+                  {BRANDS.map((brand) => (
+                    <Link
+                      key={brand.slug}
+                      href={`${basePath}/products?brand=${brand.slug}`}
+                      className="block px-3 py-1.5 rounded-lg text-xs text-text-muted
+                                 hover:text-text-primary hover:bg-surface-hover transition-colors"
+                    >
+                      {brand.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </nav>
 
