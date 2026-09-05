@@ -44,7 +44,8 @@ export function BrandLogos({ lang, dict }: BrandLogosProps) {
                   alt={brand.name}
                   className={`w-full object-contain
                              opacity-80 group-hover:opacity-100 transition-all duration-300
-                             ${brand.blendMode === "invert" ? "invert" : ""}
+                             ${brand.blendMode === "invert" && isDark ? "invert" : ""}
+                             ${brand.slug === "inno64" && !isDark ? "invert" : ""}
                              ${brand.slug === "hot-wheels" ? "max-h-32 sm:max-h-40 scale-110" : ""}
                              ${brand.slug === "pop-race" ? "max-h-16 sm:max-h-20" : ""}
                              ${brand.slug !== "hot-wheels" && brand.slug !== "pop-race" ? "max-h-24 sm:max-h-32" : ""}`}
