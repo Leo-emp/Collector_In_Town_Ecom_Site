@@ -22,14 +22,17 @@ export function HeroSection({ lang, dict }: HeroSectionProps) {
       <img
         src={isDark ? "/showcase/hero-diorama.png" : "/showcase/hero-diorama-light.png"}
         alt="Diecast car diorama showroom"
-        className="absolute inset-0 w-full h-full object-cover object-center z-0"
+        className={`absolute inset-0 w-full h-full object-cover z-0 ${isDark
+          ? "object-center"
+          : "object-[center_70%]"
+        }`}
         draggable={false}
       />
 
-      {/* Gradient overlay — adapts to theme */}
-      <div className={`absolute inset-0 z-[1] bg-gradient-to-t ${isDark
-        ? "from-background via-background/60 to-transparent"
-        : "from-background via-background/50 to-transparent"
+      {/* Gradient overlay — light mode uses a much softer gradient to keep cars visible */}
+      <div className={`absolute inset-0 z-[1] ${isDark
+        ? "bg-gradient-to-t from-background via-background/60 to-transparent"
+        : "bg-gradient-to-t from-background/80 via-transparent to-transparent"
       }`} />
 
       {/* CTA buttons — positioned at the bottom */}
@@ -37,9 +40,11 @@ export function HeroSection({ lang, dict }: HeroSectionProps) {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             href={`/${lang}/products/new-arrivals`}
-            className="bg-accent text-background px-8 py-3.5 rounded-lg font-semibold
-                       hover:bg-accent-hover transition-colors text-lg min-w-[200px]
-                       shadow-[0_4px_20px_rgba(201,168,76,0.3)]"
+            className={`px-8 py-3.5 rounded-lg font-semibold transition-colors text-lg min-w-[200px]
+                       ${isDark
+                         ? "bg-accent text-background hover:bg-accent-hover shadow-[0_4px_20px_rgba(201,168,76,0.3)]"
+                         : "bg-accent text-white hover:bg-accent-hover shadow-[0_4px_20px_rgba(163,126,44,0.4)]"
+                       }`}
           >
             {dict.hero.cta}
           </Link>
@@ -49,7 +54,7 @@ export function HeroSection({ lang, dict }: HeroSectionProps) {
                        transition-colors text-lg min-w-[200px] backdrop-blur-sm
                        ${isDark
                          ? "border-white/30 text-white hover:bg-white/10"
-                         : "border-text-primary/20 text-text-primary hover:bg-text-primary/5"
+                         : "border-white/50 text-white hover:bg-white/20 shadow-[0_2px_10px_rgba(0,0,0,0.15)]"
                        }`}
           >
             {dict.hero.ctaSecondary}
@@ -57,8 +62,11 @@ export function HeroSection({ lang, dict }: HeroSectionProps) {
         </div>
       </div>
 
-      {/* Bottom fade — smooth transition to next section */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent z-[2]" />
+      {/* Bottom fade — softer in light mode */}
+      <div className={`absolute bottom-0 left-0 right-0 z-[2] bg-gradient-to-t from-background to-transparent ${isDark
+        ? "h-32"
+        : "h-20"
+      }`} />
     </section>
   );
 }
