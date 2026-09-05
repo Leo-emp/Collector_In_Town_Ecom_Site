@@ -22,7 +22,8 @@ export const deliverySchema = z.object({
 export const orderSchema = z.object({
   contact: contactSchema,
   delivery: deliverySchema,
-  payment_method: z.enum(["kbzpay", "card"]),
+  // "card" = Stripe Checkout, "cod" = Cash on Delivery
+  payment_method: z.enum(["card", "cod"]),
   items: z
     .array(
       z.object({

@@ -40,7 +40,7 @@ export default async function AboutPage({ params }: { params: Promise<{ lang: st
           <li>Careful packaging to protect every model</li>
           <li>Delivery across all regions of Myanmar</li>
           <li>Bilingual support in English and Burmese</li>
-          <li>Secure payment via KBZPay and card</li>
+          <li>Secure payment via Visa/Mastercard and Cash on Delivery</li>
         </ul>
       </div>
     </div>

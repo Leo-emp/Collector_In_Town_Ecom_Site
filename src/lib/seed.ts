@@ -83,9 +83,6 @@ async function seed() {
     { key: "store_phone", value: JSON.stringify("09-xxx-xxx-xxx") },
     { key: "currency", value: JSON.stringify("MMK") },
     { key: "default_locale", value: JSON.stringify("en") },
-    // KBZPay manual payment info — shown at checkout until API is integrated
-    { key: "kbzpay_phone", value: JSON.stringify("09-xxx-xxx-xxx") },
-    { key: "kbzpay_name", value: JSON.stringify("Collector In Town") },
   ];
 
   for (const setting of settingsData) {

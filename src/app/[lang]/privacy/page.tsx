@@ -28,7 +28,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ lang: 
 
         <section>
           <h2 className="text-text-primary font-semibold text-lg mb-2">Payment Security</h2>
-          <p>All payment processing is handled by secure third-party providers (KBZPay and Stripe). We do not store your full payment details on our servers.</p>
+          <p>Card payment processing is handled securely by Stripe. We do not store your full payment details on our servers. Cash on Delivery payments are collected by our delivery partners.</p>
         </section>
 
         <section>

@@ -177,7 +177,7 @@ export const orders = sqliteTable("orders", {
   deliveryFee: integer("delivery_fee").notNull(),
   // Optional delivery instructions from customer
   deliveryNotes: text("delivery_notes"),
-  // Payment method — "kbzpay" only at launch
+  // Payment method — "card" (Stripe) or "cod" (Cash on Delivery)
   paymentMethod: text("payment_method").notNull(),
   // Payment status: pending | paid | failed
   paymentStatus: text("payment_status").notNull().default("pending"),
@@ -228,9 +228,9 @@ export const orderItems = sqliteTable("order_items", {
 });
 
 // ─── Site Settings ──────────────────────────────────────
-// Key-value config: store name, email, phone, KBZPay QR, etc.
+// Key-value config: store name, email, phone, etc.
 export const siteSettings = sqliteTable("site_settings", {
-  // Setting key — e.g. "store_name", "kbzpay_phone"
+  // Setting key — e.g. "store_name", "store_email"
   key: text("key").primaryKey(),
   // JSON-encoded value — parse with JSON.parse() when reading
   value: text("value").notNull(),

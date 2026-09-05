@@ -59,7 +59,8 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
     address: "", township: "", city: "", zone: "", notes: "",
   });
   const [promoCode, setPromoCode] = useState("");
-  const [payment, setPayment] = useState<"kbzpay">("kbzpay");
+  // "card" = Stripe Checkout (Visa/Mastercard), "cod" = Cash on Delivery
+  const [payment, setPayment] = useState<"card" | "cod">("card");
 
   // Fetch delivery zones and product data on mount
   useEffect(() => {
@@ -175,6 +176,24 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
       }
 
       const data = await res.json();
+
+      // For card payments, redirect to Stripe Checkout
+      if (payment === "card") {
+        const stripeRes = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId: data.order.id, customerEmail: contact.email }),
+        });
+        const stripeData = await stripeRes.json();
+        if (stripeData.url) {
+          clearCart();
+          window.location.href = stripeData.url;
+          return;
+        }
+        throw new Error("Failed to create payment session");
+      }
+
+      // For COD, show confirmation directly
       setOrderNumber(data.order.orderNumber);
       setTrackingToken(data.trackingToken);
       setOrderPlaced(true);
@@ -394,31 +413,63 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
           <div className="space-y-4">
             <h2 className="text-text-primary font-semibold text-lg mb-4">{dict.checkout.payment}</h2>
 
-            {/* KBZPay option — only payment method at launch */}
+            {/* Credit / Debit Card option (Stripe Checkout) */}
             <label className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-colors
-              ${payment === "kbzpay" ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"}`}
+              ${payment === "card" ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"}`}
             >
               <input
                 type="radio"
                 name="payment"
-                value="kbzpay"
-                checked={payment === "kbzpay"}
-                onChange={() => setPayment("kbzpay")}
+                value="card"
+                checked={payment === "card"}
+                onChange={() => setPayment("card")}
                 className="sr-only"
               />
               <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center
-                ${payment === "kbzpay" ? "border-accent" : "border-border"}`}>
-                {payment === "kbzpay" && <div className="w-2.5 h-2.5 rounded-full bg-accent" />}
+                ${payment === "card" ? "border-accent" : "border-border"}`}>
+                {payment === "card" && <div className="w-2.5 h-2.5 rounded-full bg-accent" />}
+              </div>
+              <div className="flex-1">
+                <p className="text-text-primary font-medium">{dict.checkout.card}</p>
+                <p className="text-text-muted text-xs">{dict.checkout.cardDescription}</p>
+              </div>
+              {/* Visa / Mastercard icons */}
+              <div className="flex gap-1.5">
+                <div className="w-10 h-6 bg-[#1A1F71] rounded flex items-center justify-center">
+                  <span className="text-white text-[9px] font-bold italic">VISA</span>
+                </div>
+                <div className="w-10 h-6 bg-[#EB001B] rounded-sm flex items-center justify-center relative overflow-hidden">
+                  <div className="absolute left-1 w-4 h-4 rounded-full bg-[#EB001B]" />
+                  <div className="absolute right-1 w-4 h-4 rounded-full bg-[#F79E1B] opacity-80" />
+                </div>
+              </div>
+            </label>
+
+            {/* Cash on Delivery option */}
+            <label className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-colors
+              ${payment === "cod" ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"}`}
+            >
+              <input
+                type="radio"
+                name="payment"
+                value="cod"
+                checked={payment === "cod"}
+                onChange={() => setPayment("cod")}
+                className="sr-only"
+              />
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center
+                ${payment === "cod" ? "border-accent" : "border-border"}`}>
+                {payment === "cod" && <div className="w-2.5 h-2.5 rounded-full bg-accent" />}
               </div>
               <div>
-                <p className="text-text-primary font-medium">{dict.checkout.kbzpay}</p>
-                <p className="text-text-muted text-xs">Pay via KBZPay mobile wallet</p>
+                <p className="text-text-primary font-medium">{dict.checkout.cod}</p>
+                <p className="text-text-muted text-xs">{dict.checkout.codDescription}</p>
               </div>
             </label>
 
             {/* Promo code field */}
             <div className="pt-4 border-t border-border">
-              <label className="text-text-secondary text-sm block mb-1.5">Promo Code</label>
+              <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.promoCode}</label>
               <input
                 type="text"
                 value={promoCode}
@@ -473,7 +524,9 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
                   {dict.common.edit}
                 </button>
               </div>
-              <p className="text-text-secondary text-sm">{dict.checkout.kbzpay}</p>
+              <p className="text-text-secondary text-sm">
+                {payment === "card" ? dict.checkout.card : dict.checkout.cod}
+              </p>
               {promoCode && (
                 <p className="text-accent text-xs mt-1">Promo: {promoCode}</p>
               )}

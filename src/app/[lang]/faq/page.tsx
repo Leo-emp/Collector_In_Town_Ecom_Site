@@ -6,7 +6,7 @@ export const metadata = { title: "FAQ — Collector In Town" };
 
 const FAQS = [
   { q: "Are all products authentic?", a: "Yes. Every model we sell is sourced from authorized distributors. We guarantee 100% authenticity on all products." },
-  { q: "What payment methods do you accept?", a: "We accept KBZPay (Myanmar's most popular mobile wallet) and credit/debit cards (Visa, Mastercard). Apple Pay is also supported through our card payment gateway." },
+  { q: "What payment methods do you accept?", a: "We accept credit/debit cards (Visa, Mastercard) and Cash on Delivery (COD). Pay securely online or in cash when your order arrives." },
   { q: "How long does delivery take?", a: "Yangon: 1-2 business days. Mandalay/Naypyidaw: 2-3 business days. Other regions: 3-5 business days. You'll receive tracking updates via email." },
   { q: "Can I return or exchange a product?", a: "We accept returns within 7 days of delivery if the product is unopened and in original condition. Contact us to initiate a return." },
   { q: "Do you ship internationally?", a: "Currently we only deliver within Myanmar. We're exploring international shipping options for the future." },

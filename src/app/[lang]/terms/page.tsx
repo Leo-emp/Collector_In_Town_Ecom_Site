@@ -18,7 +18,7 @@ export default async function TermsPage({ params }: { params: Promise<{ lang: st
       <div className="space-y-6 text-text-secondary text-sm leading-relaxed">
         <section>
           <h2 className="text-text-primary font-semibold text-lg mb-2">Orders & Payment</h2>
-          <p>All prices are listed in Myanmar Kyat (MMK). Payment is required at the time of order. We accept KBZPay and credit/debit cards. Orders are confirmed once payment is successfully processed.</p>
+          <p>All prices are listed in Myanmar Kyat (MMK). We accept credit/debit cards (Visa, Mastercard) and Cash on Delivery (COD). Card orders are confirmed once payment is processed. COD orders are confirmed upon delivery and cash payment.</p>
         </section>
 
         <section>
