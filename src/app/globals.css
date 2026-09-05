@@ -26,6 +26,21 @@
   --font-display: "Cinzel", serif;
 }
 
+/* Light theme — activated by data-theme="light" on <html> */
+[data-theme="light"] {
+  --color-background: #fafaf9;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f5f5f4;
+  --color-border: #e7e5e4;
+
+  --color-text-primary: #1c1917;
+  --color-text-secondary: #57534e;
+  --color-text-muted: #a8a29e;
+
+  --color-accent: #a37e2c;
+  --color-accent-hover: #8b6914;
+}
+
 /* Global body styles */
 body {
   background: var(--color-background);
@@ -35,7 +50,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar */
+/* Smooth theme transitions */
+body, .bg-surface, .bg-background {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Scrollbar — uses theme variables */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

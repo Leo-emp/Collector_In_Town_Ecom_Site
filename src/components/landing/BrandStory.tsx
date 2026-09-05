@@ -1,5 +1,5 @@
-﻿// Brand story section — cinematic section about the brand's passion
-// Dark aesthetic with minimal text and premium feel
+// Brand story section — cinematic section about the brand's passion
+// Theme-aware: subtle accent glows adapt to dark/light mode
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 
 interface BrandStoryProps {
@@ -9,13 +9,13 @@ interface BrandStoryProps {
 export function BrandStory({ dict }: BrandStoryProps) {
   return (
     <section className="py-24 px-4 relative overflow-hidden">
-      {/* Subtle background accent glow */}
+      {/* Subtle background accent glow — uses CSS vars so it adapts to theme */}
       <div
         className="absolute inset-0 z-0"
         style={{
           background: `
-            radial-gradient(ellipse at 30% 50%, rgba(201, 168, 76, 0.05) 0%, transparent 60%),
-            radial-gradient(ellipse at 70% 50%, rgba(201, 168, 76, 0.03) 0%, transparent 50%)
+            radial-gradient(ellipse at 30% 50%, color-mix(in srgb, var(--color-accent) 5%, transparent) 0%, transparent 60%),
+            radial-gradient(ellipse at 70% 50%, color-mix(in srgb, var(--color-accent) 3%, transparent) 0%, transparent 50%)
           `,
         }}
       />

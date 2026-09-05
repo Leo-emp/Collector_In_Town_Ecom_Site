@@ -10,6 +10,7 @@ import { FeaturedShowcase } from "@/components/landing/FeaturedShowcase";
 import { NewArrivalsStrip } from "@/components/landing/NewArrivalsStrip";
 import { BrandStory } from "@/components/landing/BrandStory";
 import { BrandLogos } from "@/components/landing/BrandLogos";
+import { ThemeToggle } from "@/components/landing/ThemeToggle";
 
 export default async function HomePage({
   params,
@@ -25,6 +26,9 @@ export default async function HomePage({
 
   return (
     <>
+      {/* Dark/Light theme toggle — floating button */}
+      <ThemeToggle />
+
       {/* Full-viewport hero with diorama background and CTA */}
       <HeroSection lang={lang} dict={dict} />
 

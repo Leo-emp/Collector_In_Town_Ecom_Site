@@ -6,6 +6,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import { formatPrice } from "@/lib/format";
+import { useTheme } from "@/context/ThemeContext";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 
 interface FeaturedCar {
@@ -70,6 +71,8 @@ const PLACEHOLDER_CARS: FeaturedCar[] = [
 ];
 
 export function FeaturedShowcase({ lang, dict, cars }: FeaturedShowcaseProps) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const featuredCars = cars || PLACEHOLDER_CARS;
   const [activeIndex, setActiveIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -127,14 +130,23 @@ export function FeaturedShowcase({ lang, dict, cars }: FeaturedShowcaseProps) {
 
   return (
     <section className="relative overflow-hidden">
-      {/* Background — layered dark gradients with colored accent glows */}
-      <div className="absolute inset-0 bg-[#07070a]">
+      {/* Background — theme-aware gradients with accent glows */}
+      <div className={`absolute inset-0 ${isDark ? "bg-[#07070a]" : "bg-[#f5f3ee]"}`}>
         {/* Top-down spotlight gradient */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,rgba(201,168,76,0.08),transparent_70%)]" />
+        <div className={`absolute inset-0 ${isDark
+          ? "bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,rgba(201,168,76,0.08),transparent_70%)]"
+          : "bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,rgba(163,126,44,0.06),transparent_70%)]"
+        }`} />
         {/* Center warm glow behind the car */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_50%_45%,rgba(201,168,76,0.06),transparent_70%)]" />
-        {/* Bottom blue accent */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_30%_at_50%_100%,rgba(68,102,255,0.04),transparent_60%)]" />
+        <div className={`absolute inset-0 ${isDark
+          ? "bg-[radial-gradient(ellipse_50%_40%_at_50%_45%,rgba(201,168,76,0.06),transparent_70%)]"
+          : "bg-[radial-gradient(ellipse_50%_40%_at_50%_45%,rgba(163,126,44,0.04),transparent_70%)]"
+        }`} />
+        {/* Bottom accent */}
+        <div className={`absolute inset-0 ${isDark
+          ? "bg-[radial-gradient(ellipse_70%_30%_at_50%_100%,rgba(68,102,255,0.04),transparent_60%)]"
+          : "bg-[radial-gradient(ellipse_70%_30%_at_50%_100%,rgba(163,126,44,0.03),transparent_60%)]"
+        }`} />
       </div>
 
       {/* Section header */}
@@ -142,7 +154,7 @@ export function FeaturedShowcase({ lang, dict, cars }: FeaturedShowcaseProps) {
         <p className="text-accent/40 text-[10px] sm:text-xs uppercase tracking-[0.35em] mb-3">
           {dict.sections.featuredShowcase}
         </p>
-        <h2 className="font-[family-name:var(--font-cinzel)] text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-white/90 tracking-wide">
+        <h2 className="font-[family-name:var(--font-cinzel)] text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-text-primary tracking-wide">
           {dict.sections.featuredShowcaseDesc}
         </h2>
       </div>
@@ -159,9 +171,10 @@ export function FeaturedShowcase({ lang, dict, cars }: FeaturedShowcaseProps) {
         aria-label="Featured car showcase"
       >
         {/* Spotlight beams from above */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] sm:w-[700px] h-[300px] sm:h-[400px]
-                        bg-[conic-gradient(from_180deg_at_50%_0%,transparent_40%,rgba(255,255,255,0.02)_45%,rgba(255,255,255,0.04)_50%,rgba(255,255,255,0.02)_55%,transparent_60%)]
-                        pointer-events-none" />
+        <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-[500px] sm:w-[700px] h-[300px] sm:h-[400px] pointer-events-none ${isDark
+          ? "bg-[conic-gradient(from_180deg_at_50%_0%,transparent_40%,rgba(255,255,255,0.02)_45%,rgba(255,255,255,0.04)_50%,rgba(255,255,255,0.02)_55%,transparent_60%)]"
+          : "bg-[conic-gradient(from_180deg_at_50%_0%,transparent_40%,rgba(163,126,44,0.03)_45%,rgba(163,126,44,0.06)_50%,rgba(163,126,44,0.03)_55%,transparent_60%)]"
+        }`} />
 
         {/* Product image — the star of the show */}
         <div className={`absolute inset-0 flex items-center justify-center transition-all duration-500
@@ -216,10 +229,10 @@ export function FeaturedShowcase({ lang, dict, cars }: FeaturedShowcaseProps) {
           onClick={prevCar}
           className="absolute left-3 sm:left-8 top-1/2 -translate-y-1/2 z-20
                      w-10 h-10 sm:w-12 sm:h-12 rounded-full
-                     bg-white/[0.03] backdrop-blur-sm border border-white/[0.06]
+                     bg-surface/50 backdrop-blur-sm border border-border
                      flex items-center justify-center
                      hover:bg-accent/10 hover:border-accent/20 transition-all duration-300
-                     text-white/30 hover:text-accent"
+                     text-text-muted hover:text-accent"
           aria-label="Previous car"
         >
           <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -231,10 +244,10 @@ export function FeaturedShowcase({ lang, dict, cars }: FeaturedShowcaseProps) {
           onClick={nextCar}
           className="absolute right-3 sm:right-8 top-1/2 -translate-y-1/2 z-20
                      w-10 h-10 sm:w-12 sm:h-12 rounded-full
-                     bg-white/[0.03] backdrop-blur-sm border border-white/[0.06]
+                     bg-surface/50 backdrop-blur-sm border border-border
                      flex items-center justify-center
                      hover:bg-accent/10 hover:border-accent/20 transition-all duration-300
-                     text-white/30 hover:text-accent"
+                     text-text-muted hover:text-accent"
           aria-label="Next car"
         >
           <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,11 +260,11 @@ export function FeaturedShowcase({ lang, dict, cars }: FeaturedShowcaseProps) {
       <div className="relative z-10 text-center pb-4 sm:pb-6 -mt-8 sm:-mt-4">
         <div className={`inline-block transition-all duration-500
                          ${isTransitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}>
-          <p className="text-white/25 text-[10px] sm:text-xs font-medium uppercase tracking-[0.3em] mb-1.5">
+          <p className="text-text-muted text-[10px] sm:text-xs font-medium uppercase tracking-[0.3em] mb-1.5">
             {activeCar.brandDisplay} &middot; {activeCar.scale}
           </p>
           <Link href={`/${lang}/products/${activeCar.brand}/${activeCar.slug}`}>
-            <h3 className="text-white font-[family-name:var(--font-cinzel)] text-xl sm:text-2xl md:text-3xl
+            <h3 className="text-text-primary font-[family-name:var(--font-cinzel)] text-xl sm:text-2xl md:text-3xl
                            hover:text-accent transition-colors duration-300 tracking-wide mb-2">
               {activeCar.name}
             </h3>
@@ -271,7 +284,7 @@ export function FeaturedShowcase({ lang, dict, cars }: FeaturedShowcaseProps) {
             className={`rounded-full transition-all duration-500 ${
               i === activeIndex
                 ? "bg-accent w-8 h-[3px]"
-                : "bg-white/10 w-[6px] h-[3px] hover:bg-white/25"
+                : "bg-text-muted/30 w-[6px] h-[3px] hover:bg-text-muted/50"
             }`}
             aria-label={`View ${car.name}`}
           />

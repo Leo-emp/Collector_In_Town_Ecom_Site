@@ -6,6 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { FooterWrapper } from "@/components/FooterWrapper";
 import { CartProvider } from "@/context/CartContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 // Pre-generate both locale paths at build time for static rendering
 export async function generateStaticParams() {
@@ -30,17 +31,19 @@ export default async function LocaleLayout({
   const dict = await getDictionary(lang);
 
   return (
-    <CartProvider>
-      {/* Main navigation — sticky at top */}
-      <Navbar lang={lang} dict={dict} />
+    <ThemeProvider>
+      <CartProvider>
+        {/* Main navigation — sticky at top */}
+        <Navbar lang={lang} dict={dict} />
 
-      {/* Page content — grows to fill space between nav and footer */}
-      <main className="min-h-[calc(100vh-96px-200px)]">{children}</main>
+        {/* Page content — grows to fill space between nav and footer */}
+        <main className="min-h-[calc(100vh-96px-200px)]">{children}</main>
 
-      {/* Site footer — hidden on admin pages */}
-      <FooterWrapper>
-        <Footer lang={lang} dict={dict} />
-      </FooterWrapper>
-    </CartProvider>
+        {/* Site footer — hidden on admin pages */}
+        <FooterWrapper>
+          <Footer lang={lang} dict={dict} />
+        </FooterWrapper>
+      </CartProvider>
+    </ThemeProvider>
   );
 }
