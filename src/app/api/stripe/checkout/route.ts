@@ -6,13 +6,20 @@ import { db } from "@/lib/drizzle";
 import { orders, orderItems } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error("STRIPE_SECRET_KEY is not configured");
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY);
+}
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   if (!body?.orderId || !body?.customerEmail) {
     return NextResponse.json({ error: "Missing orderId or customerEmail" }, { status: 400 });
   }
+
+  const stripe = getStripe();
 
   // Fetch the order
   const [order] = await db
