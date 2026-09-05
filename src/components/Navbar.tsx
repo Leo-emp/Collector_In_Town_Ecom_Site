@@ -1,5 +1,3 @@
-﻿// Navbar — premium dark navigation bar with brand links, cart, and locale switcher
-// Sticky at top, transparent on scroll-top, solid on scroll
 "use client";
 
 import { useState } from "react";
@@ -8,15 +6,14 @@ import { usePathname } from "next/navigation";
 import { BRANDS } from "@/lib/constants";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useCart } from "@/context/CartContext";
+import { useTheme } from "@/context/ThemeContext";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 
-// Props: current locale + full dictionary for translated labels
 interface NavbarProps {
   lang: string;
   dict: Dictionary;
 }
 
-// Map brand slugs to their dictionary keys for translated names
 const BRAND_NAV_KEYS: Record<string, keyof Dictionary["nav"]> = {
   "mini-gt": "miniGt",
   "hot-wheels": "hotWheels",
@@ -26,202 +23,114 @@ const BRAND_NAV_KEYS: Record<string, keyof Dictionary["nav"]> = {
 };
 
 export function Navbar({ lang, dict }: NavbarProps) {
-  // Mobile menu toggle state
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const { itemCount } = useCart();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
-  // Hide navbar on admin, account, and auth pages — they have their own layouts
   if (pathname.includes("/admin") || pathname.includes("/account") || pathname.includes("/sign-in") || pathname.includes("/sign-up")) return null;
 
-  // Check if a nav link is currently active
   const isActive = (href: string) => pathname === href;
-
-  // Build locale-prefixed URL helper
   const localePath = (path: string) => `/${lang}${path}`;
 
+  const navLinkClass = (href: string) =>
+    isActive(href)
+      ? isDark ? "text-[#c9a84c] bg-[#c9a84c]/10" : "text-[#7a5c1f] bg-[#7a5c1f]/10"
+      : isDark ? "text-[#a3a3a3] hover:text-[#f5f5f5] hover:bg-[#1a1a1a]" : "text-[#44403c] hover:text-[#000000] hover:bg-[#f5f5f4]";
+
   return (
-    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+    <header className={`sticky top-0 z-50 backdrop-blur-md border-b ${isDark ? "bg-[#0a0a0a]/80 border-[#262626]" : "bg-[#fafaf9]/80 border-[#e7e5e4]"}`}>
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-24">
-          {/* Logo — brand image + text */}
-          <Link
-            href={localePath("/")}
-            className="flex items-center gap-3 shrink-0"
-          >
-            <img
-              src="/images/logo.png"
-              alt="Collector In Town"
-              className="h-20 w-auto"
-            />
-            <span className="font-[family-name:var(--font-cinzel)] text-lg text-accent font-bold hidden sm:block">
+          <Link href={localePath("/")} className="flex items-center gap-3 shrink-0">
+            <img src="/images/logo.png" alt="Collector In Town" className="h-20 w-auto" />
+            <span className={`font-[family-name:var(--font-cinzel)] text-lg font-bold hidden sm:block ${isDark ? "text-[#c9a84c]" : "text-[#7a5c1f]"}`}>
               Collector In Town
             </span>
           </Link>
 
-          {/* Desktop navigation links — hidden on mobile */}
           <div className="hidden lg:flex items-center gap-1">
-            {/* New Arrivals link */}
             <Link
               href={localePath("/products/new-arrivals")}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors
-                ${
-                  isActive(localePath("/products/new-arrivals"))
-                    ? "text-accent bg-accent/10"
-                    : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
-                }`}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${navLinkClass(localePath("/products/new-arrivals"))}`}
             >
               {dict.nav.newArrivals}
             </Link>
 
-            {/* Brand links — one for each of the 4 brands */}
             {BRANDS.map((brand) => (
               <Link
                 key={brand.slug}
                 href={localePath(`/products/${brand.slug}`)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors
-                  ${
-                    isActive(localePath(`/products/${brand.slug}`))
-                      ? "text-accent bg-accent/10"
-                      : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
-                  }`}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${navLinkClass(localePath(`/products/${brand.slug}`))}`}
               >
                 {dict.nav[BRAND_NAV_KEYS[brand.slug]]}
               </Link>
             ))}
           </div>
 
-          {/* Right side actions — cart, language, account */}
           <div className="flex items-center gap-2">
-            {/* Language switcher */}
             <LanguageSwitcher lang={lang} dict={dict} />
 
-            {/* Cart button with icon */}
             <Link
               href={localePath("/cart")}
-              className="relative p-2 rounded-lg text-text-secondary hover:text-text-primary
-                         hover:bg-surface-hover transition-colors"
+              className={`relative p-2 rounded-lg transition-colors ${isDark ? "text-[#a3a3a3] hover:text-[#f5f5f5] hover:bg-[#1a1a1a]" : "text-[#44403c] hover:text-[#000000] hover:bg-[#f5f5f4]"}`}
               aria-label={dict.nav.cart}
             >
-              {/* Shopping bag icon */}
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
-
-              {/* Cart badge — shows total item count from CartContext */}
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-accent text-background
-                                 text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                <span className={`absolute -top-1 -right-1 text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold ${isDark ? "bg-[#c9a84c] text-[#0a0a0a]" : "bg-[#7a5c1f] text-white"}`}>
                   {itemCount > 9 ? "9+" : itemCount}
                 </span>
               )}
             </Link>
 
-            {/* Account button */}
             <Link
               href={localePath("/account")}
-              className="p-2 rounded-lg text-text-secondary hover:text-text-primary
-                         hover:bg-surface-hover transition-colors"
+              className={`p-2 rounded-lg transition-colors ${isDark ? "text-[#a3a3a3] hover:text-[#f5f5f5] hover:bg-[#1a1a1a]" : "text-[#44403c] hover:text-[#000000] hover:bg-[#f5f5f4]"}`}
               aria-label={dict.nav.account}
             >
-              {/* User icon */}
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </Link>
 
-            {/* Mobile menu hamburger button — visible only on small screens */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg text-text-secondary hover:text-text-primary
-                         hover:bg-surface-hover transition-colors"
+              className={`lg:hidden p-2 rounded-lg transition-colors ${isDark ? "text-[#a3a3a3] hover:text-[#f5f5f5] hover:bg-[#1a1a1a]" : "text-[#44403c] hover:text-[#000000] hover:bg-[#f5f5f4]"}`}
               aria-label={dict.nav.menu}
               aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? (
-                // X icon — close menu
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               ) : (
-                // Hamburger icon — open menu
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               )}
             </button>
           </div>
         </div>
 
-        {/* Mobile menu — slides down when hamburger is tapped */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-border py-4 space-y-1">
-            {/* New Arrivals */}
+          <div className={`lg:hidden border-t py-4 space-y-1 ${isDark ? "border-[#262626]" : "border-[#e7e5e4]"}`}>
             <Link
               href={localePath("/products/new-arrivals")}
               onClick={() => setMobileMenuOpen(false)}
-              className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-                ${
-                  isActive(localePath("/products/new-arrivals"))
-                    ? "text-accent bg-accent/10"
-                    : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
-                }`}
+              className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${navLinkClass(localePath("/products/new-arrivals"))}`}
             >
               {dict.nav.newArrivals}
             </Link>
-
-            {/* Brand links */}
             {BRANDS.map((brand) => (
               <Link
                 key={brand.slug}
                 href={localePath(`/products/${brand.slug}`)}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-                  ${
-                    isActive(localePath(`/products/${brand.slug}`))
-                      ? "text-accent bg-accent/10"
-                      : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
-                  }`}
+                className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${navLinkClass(localePath(`/products/${brand.slug}`))}`}
               >
                 {dict.nav[BRAND_NAV_KEYS[brand.slug]]}
               </Link>

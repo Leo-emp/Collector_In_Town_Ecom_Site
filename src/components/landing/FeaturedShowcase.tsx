@@ -151,10 +151,10 @@ export function FeaturedShowcase({ lang, dict, cars }: FeaturedShowcaseProps) {
 
       {/* Section header */}
       <div className="relative z-10 text-center pt-12 sm:pt-16 md:pt-20 pb-4 sm:pb-6">
-        <p className="text-accent/40 text-[10px] sm:text-xs uppercase tracking-[0.35em] mb-3">
+        <p className={`text-[10px] sm:text-xs uppercase tracking-[0.35em] mb-3 ${isDark ? "text-[#c9a84c]/40" : "text-[#7a5c1f]"}`}>
           {dict.sections.featuredShowcase}
         </p>
-        <h2 className="font-[family-name:var(--font-cinzel)] text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-text-primary tracking-wide">
+        <h2 className={`font-[family-name:var(--font-cinzel)] text-2xl sm:text-3xl md:text-4xl lg:text-5xl tracking-wide ${isDark ? "text-[#f5f5f5]" : "text-[#000000]"}`}>
           {dict.sections.featuredShowcaseDesc}
         </h2>
       </div>
@@ -227,12 +227,13 @@ export function FeaturedShowcase({ lang, dict, cars }: FeaturedShowcaseProps) {
         {/* Navigation arrows */}
         <button
           onClick={prevCar}
-          className="absolute left-3 sm:left-8 top-1/2 -translate-y-1/2 z-20
+          className={`absolute left-3 sm:left-8 top-1/2 -translate-y-1/2 z-20
                      w-10 h-10 sm:w-12 sm:h-12 rounded-full
-                     bg-surface/50 backdrop-blur-sm border border-border
-                     flex items-center justify-center
-                     hover:bg-accent/10 hover:border-accent/20 transition-all duration-300
-                     text-text-muted hover:text-accent"
+                     backdrop-blur-sm border flex items-center justify-center
+                     transition-all duration-300
+                     ${isDark
+                       ? "bg-[#141414]/50 border-[#262626] text-[#737373] hover:text-[#c9a84c] hover:bg-[#c9a84c]/10 hover:border-[#c9a84c]/20"
+                       : "bg-white/50 border-[#e7e5e4] text-[#78716c] hover:text-[#7a5c1f] hover:bg-[#7a5c1f]/10 hover:border-[#7a5c1f]/20"}`}
           aria-label="Previous car"
         >
           <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -242,12 +243,13 @@ export function FeaturedShowcase({ lang, dict, cars }: FeaturedShowcaseProps) {
 
         <button
           onClick={nextCar}
-          className="absolute right-3 sm:right-8 top-1/2 -translate-y-1/2 z-20
+          className={`absolute right-3 sm:right-8 top-1/2 -translate-y-1/2 z-20
                      w-10 h-10 sm:w-12 sm:h-12 rounded-full
-                     bg-surface/50 backdrop-blur-sm border border-border
-                     flex items-center justify-center
-                     hover:bg-accent/10 hover:border-accent/20 transition-all duration-300
-                     text-text-muted hover:text-accent"
+                     backdrop-blur-sm border flex items-center justify-center
+                     transition-all duration-300
+                     ${isDark
+                       ? "bg-[#141414]/50 border-[#262626] text-[#737373] hover:text-[#c9a84c] hover:bg-[#c9a84c]/10 hover:border-[#c9a84c]/20"
+                       : "bg-white/50 border-[#e7e5e4] text-[#78716c] hover:text-[#7a5c1f] hover:bg-[#7a5c1f]/10 hover:border-[#7a5c1f]/20"}`}
           aria-label="Next car"
         >
           <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -260,16 +262,17 @@ export function FeaturedShowcase({ lang, dict, cars }: FeaturedShowcaseProps) {
       <div className="relative z-10 text-center pb-4 sm:pb-6 -mt-8 sm:-mt-4">
         <div className={`inline-block transition-all duration-500
                          ${isTransitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}>
-          <p className="text-text-muted text-[10px] sm:text-xs font-medium uppercase tracking-[0.3em] mb-1.5">
+          <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-[0.3em] mb-1.5 ${isDark ? "text-[#737373]" : "text-[#78716c]"}`}>
             {activeCar.brandDisplay} &middot; {activeCar.scale}
           </p>
           <Link href={`/${lang}/products/${activeCar.brand}/${activeCar.slug}`}>
-            <h3 className="text-text-primary font-[family-name:var(--font-cinzel)] text-xl sm:text-2xl md:text-3xl
-                           hover:text-accent transition-colors duration-300 tracking-wide mb-2">
+            <h3 className={`font-[family-name:var(--font-cinzel)] text-xl sm:text-2xl md:text-3xl
+                           transition-colors duration-300 tracking-wide mb-2
+                           ${isDark ? "text-[#f5f5f5] hover:text-[#c9a84c]" : "text-[#000000] hover:text-[#7a5c1f]"}`}>
               {activeCar.name}
             </h3>
           </Link>
-          <span className="text-accent font-semibold text-base sm:text-lg tracking-wide">
+          <span className={`font-semibold text-base sm:text-lg tracking-wide ${isDark ? "text-[#c9a84c]" : "text-[#7a5c1f]"}`}>
             {formatPrice(activeCar.price)}
           </span>
         </div>
@@ -283,8 +286,8 @@ export function FeaturedShowcase({ lang, dict, cars }: FeaturedShowcaseProps) {
             onClick={() => !isTransitioning && switchCar(i)}
             className={`rounded-full transition-all duration-500 ${
               i === activeIndex
-                ? "bg-accent w-8 h-[3px]"
-                : "bg-text-muted/30 w-[6px] h-[3px] hover:bg-text-muted/50"
+                ? `w-8 h-[3px] ${isDark ? "bg-[#c9a84c]" : "bg-[#7a5c1f]"}`
+                : `w-[6px] h-[3px] ${isDark ? "bg-[#737373]/30 hover:bg-[#737373]/50" : "bg-[#78716c]/30 hover:bg-[#78716c]/50"}`
             }`}
             aria-label={`View ${car.name}`}
           />

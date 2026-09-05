@@ -1,7 +1,8 @@
-﻿// Brand logos section — horizontal row of the 4 diecast brands we carry
-// Shows actual brand logo images with hover effects
+"use client";
+
 import Link from "next/link";
 import { BRANDS } from "@/lib/constants";
+import { useTheme } from "@/context/ThemeContext";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 
 interface BrandLogosProps {
@@ -10,31 +11,32 @@ interface BrandLogosProps {
 }
 
 export function BrandLogos({ lang, dict }: BrandLogosProps) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   return (
-    <section className="py-16 px-4 border-t border-border">
+    <section className={`py-16 px-4 border-t ${isDark ? "border-[#262626]" : "border-[#e7e5e4]"}`}>
       <div className="max-w-5xl mx-auto text-center">
-        {/* Section header */}
-        <p className="text-accent/60 text-sm uppercase tracking-[0.3em] mb-3">
+        <p className={`text-sm uppercase tracking-[0.3em] mb-3 ${isDark ? "text-[#c9a84c]/60" : "text-[#7a5c1f]"}`}>
           {dict.sections.brands}
         </p>
-        <h2 className="font-[family-name:var(--font-cinzel)] text-2xl md:text-3xl text-text-primary mb-3">
+        <h2 className={`font-[family-name:var(--font-cinzel)] text-2xl md:text-3xl mb-3 ${isDark ? "text-[#f5f5f5]" : "text-[#000000]"}`}>
           {dict.sections.brandsDesc}
         </h2>
 
-        {/* Decorative divider */}
-        <div className="w-12 h-px bg-accent/40 mx-auto mb-12" />
+        <div className={`w-12 h-px mx-auto mb-12 ${isDark ? "bg-[#c9a84c]/40" : "bg-[#7a5c1f]/40"}`} />
 
-        {/* Brand grid — 4 columns on desktop, 2 on mobile */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           {BRANDS.filter((brand) => brand.slug !== "other").map((brand) => (
             <Link
               key={brand.slug}
               href={`/${lang}/products/${brand.slug}`}
-              className="group flex flex-col items-center justify-center p-6 md:p-8
-                         bg-surface/50 rounded-xl border border-border
-                         hover:border-accent/30 hover:bg-surface transition-all"
+              className={`group flex flex-col items-center justify-center p-6 md:p-8
+                         rounded-xl border transition-all
+                         ${isDark
+                           ? "bg-[#141414]/50 border-[#262626] hover:border-[#c9a84c]/30 hover:bg-[#141414]"
+                           : "bg-white/50 border-[#e7e5e4] hover:border-[#7a5c1f]/30 hover:bg-white"}`}
             >
-              {/* Brand logo — centered, large */}
               <div className="flex items-center justify-center h-24 sm:h-32 w-full">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -49,9 +51,8 @@ export function BrandLogos({ lang, dict }: BrandLogosProps) {
                 />
               </div>
 
-              {/* "View Collection" link */}
-              <span className="text-text-muted text-xs mt-4 group-hover:text-accent/70
-                               transition-colors uppercase tracking-wider">
+              <span className={`text-xs mt-4 transition-colors uppercase tracking-wider
+                               ${isDark ? "text-[#737373] group-hover:text-[#c9a84c]/70" : "text-[#78716c] group-hover:text-[#7a5c1f]/70"}`}>
                 {dict.sections.viewCollection}
               </span>
             </Link>

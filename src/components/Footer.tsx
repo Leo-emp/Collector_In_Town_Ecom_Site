@@ -1,133 +1,96 @@
-﻿// Footer — site-wide footer with brand info, quick links, and newsletter signup
-// Premium dark design with accent color highlights
+"use client";
+
 import Link from "next/link";
+import { useTheme } from "@/context/ThemeContext";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 import { NewsletterForm } from "./NewsletterForm";
 
-// Props: current locale + full dictionary for translated labels
 interface FooterProps {
   lang: string;
   dict: Dictionary;
 }
 
 export function Footer({ lang, dict }: FooterProps) {
-  // Build locale-prefixed URL helper
-  const localePath = (path: string) => `/${lang}${path}`;
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
-  // Current year for copyright
+  const localePath = (path: string) => `/${lang}${path}`;
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-surface border-t border-border mt-auto">
+    <footer className={`border-t mt-auto ${isDark ? "bg-[#141414] border-[#262626]" : "bg-white border-[#e7e5e4]"}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Footer grid — 3 columns on desktop, stacked on mobile */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          {/* Column 1: Brand info */}
           <div>
             <Link href={localePath("/")} className="inline-flex items-center gap-3 mb-4">
-              <img
-                src="/images/logo.png"
-                alt="Collector In Town"
-                className="h-28 w-auto"
-              />
-              <span className="font-[family-name:var(--font-cinzel)] text-2xl text-accent font-bold">
+              <img src="/images/logo.png" alt="Collector In Town" className="h-28 w-auto" />
+              <span className={`font-[family-name:var(--font-cinzel)] text-2xl font-bold ${isDark ? "text-[#c9a84c]" : "text-[#7a5c1f]"}`}>
                 Collector In Town
               </span>
             </Link>
-            <p className="text-text-secondary text-sm leading-relaxed">
+            <p className={`text-sm leading-relaxed ${isDark ? "text-[#a3a3a3]" : "text-[#44403c]"}`}>
               {dict.footer.description}
             </p>
           </div>
 
-          {/* Column 2: Quick links */}
           <div>
-            <h3 className="text-text-primary font-semibold mb-4 text-sm uppercase tracking-wider">
+            <h3 className={`font-semibold mb-4 text-sm uppercase tracking-wider ${isDark ? "text-[#f5f5f5]" : "text-[#000000]"}`}>
               {dict.footer.quickLinks}
             </h3>
             <ul className="space-y-2.5">
-              <li>
-                <Link
-                  href={localePath("/about")}
-                  className="text-text-secondary hover:text-accent transition-colors text-sm"
-                >
-                  {dict.footer.about}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href={localePath("/contact")}
-                  className="text-text-secondary hover:text-accent transition-colors text-sm"
-                >
-                  {dict.footer.contact}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href={localePath("/faq")}
-                  className="text-text-secondary hover:text-accent transition-colors text-sm"
-                >
-                  {dict.footer.faq}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href={localePath("/privacy")}
-                  className="text-text-secondary hover:text-accent transition-colors text-sm"
-                >
-                  {dict.footer.privacy}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href={localePath("/terms")}
-                  className="text-text-secondary hover:text-accent transition-colors text-sm"
-                >
-                  {dict.footer.terms}
-                </Link>
-              </li>
+              {[
+                { href: "/about", label: dict.footer.about },
+                { href: "/contact", label: dict.footer.contact },
+                { href: "/faq", label: dict.footer.faq },
+                { href: "/privacy", label: dict.footer.privacy },
+                { href: "/terms", label: dict.footer.terms },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={localePath(link.href)}
+                    className={`transition-colors text-sm ${isDark ? "text-[#a3a3a3] hover:text-[#c9a84c]" : "text-[#44403c] hover:text-[#7a5c1f]"}`}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Column 3: Newsletter signup */}
           <div>
-            <h3 className="text-text-primary font-semibold mb-4 text-sm uppercase tracking-wider">
+            <h3 className={`font-semibold mb-4 text-sm uppercase tracking-wider ${isDark ? "text-[#f5f5f5]" : "text-[#000000]"}`}>
               {dict.footer.newsletter}
             </h3>
-            <p className="text-text-secondary text-sm mb-4">
+            <p className={`text-sm mb-4 ${isDark ? "text-[#a3a3a3]" : "text-[#44403c]"}`}>
               {dict.footer.newsletterDesc}
             </p>
-            {/* Newsletter form — client component for event handling */}
             <NewsletterForm dict={dict} />
           </div>
         </div>
 
-        {/* Bottom bar — copyright and social links */}
-        <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-text-muted text-xs">
-            © {year} Collector In Town. {dict.footer.rights}
+        <div className={`mt-10 pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-4 ${isDark ? "border-[#262626]" : "border-[#e7e5e4]"}`}>
+          <p className={`text-xs ${isDark ? "text-[#737373]" : "text-[#78716c]"}`}>
+            &copy; {year} Collector In Town. {dict.footer.rights}
           </p>
 
-          {/* Social media links — placeholder icons */}
           <div className="flex items-center gap-4">
-            <span className="text-text-muted text-xs">{dict.footer.followUs}</span>
-            {/* Facebook */}
+            <span className={`text-xs ${isDark ? "text-[#737373]" : "text-[#78716c]"}`}>{dict.footer.followUs}</span>
             <a
               href="https://facebook.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-text-muted hover:text-accent transition-colors"
+              className={`transition-colors ${isDark ? "text-[#737373] hover:text-[#c9a84c]" : "text-[#78716c] hover:text-[#7a5c1f]"}`}
               aria-label="Facebook"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
               </svg>
             </a>
-            {/* Instagram */}
             <a
               href="https://instagram.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-text-muted hover:text-accent transition-colors"
+              className={`transition-colors ${isDark ? "text-[#737373] hover:text-[#c9a84c]" : "text-[#78716c] hover:text-[#7a5c1f]"}`}
               aria-label="Instagram"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
