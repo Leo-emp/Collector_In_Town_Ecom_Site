@@ -23,7 +23,7 @@ export function HeroSection({ lang, dict }: HeroSectionProps) {
         src={isDark ? "/showcase/hero-diorama.png" : "/showcase/hero-diorama-light.png"}
         alt="Diecast car diorama showroom"
         className={`absolute inset-0 w-full h-full object-cover z-0 ${isDark
-          ? "object-center"
+          ? "object-[center_65%]"
           : "object-[center_70%]"
         }`}
         draggable={false}
@@ -31,8 +31,8 @@ export function HeroSection({ lang, dict }: HeroSectionProps) {
 
       {/* Gradient overlay — light mode uses a much softer gradient to keep cars visible */}
       <div className={`absolute inset-0 z-[1] ${isDark
-        ? "bg-gradient-to-t from-background via-background/60 to-transparent"
-        : "bg-gradient-to-t from-background/80 via-transparent to-transparent"
+        ? "bg-gradient-to-t from-[#0a0a0a]/90 via-transparent to-transparent"
+        : "bg-gradient-to-t from-[#fafaf9]/80 via-transparent to-transparent"
       }`} />
 
       {/* CTA buttons — positioned at the bottom */}
@@ -63,9 +63,9 @@ export function HeroSection({ lang, dict }: HeroSectionProps) {
       </div>
 
       {/* Bottom fade — softer in light mode */}
-      <div className={`absolute bottom-0 left-0 right-0 z-[2] bg-gradient-to-t from-background to-transparent ${isDark
-        ? "h-32"
-        : "h-20"
+      <div className={`absolute bottom-0 left-0 right-0 z-[2] bg-gradient-to-t to-transparent ${isDark
+        ? "h-20 from-[#0a0a0a]"
+        : "h-20 from-[#fafaf9]"
       }`} />
     </section>
   );
