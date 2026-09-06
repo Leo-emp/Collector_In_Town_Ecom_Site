@@ -40,11 +40,11 @@ export function Navbar({ lang, dict }: NavbarProps) {
       : isDark ? "text-[#a3a3a3] hover:text-[#f5f5f5] hover:bg-[#1a1a1a]" : "text-[#44403c] hover:text-[#000000] hover:bg-[#f5f5f4]";
 
   return (
-    <header className={`sticky top-0 z-50 backdrop-blur-md border-b ${isDark ? "bg-[#0a0a0a]/80 border-[#262626]" : "bg-[#fafaf9]/80 border-[#e7e5e4]"}`}>
+    <header className={`sticky top-0 z-50 border-b ${isDark ? "bg-[#0a0a0a]/80 backdrop-blur-md border-[#262626]" : "bg-[#fafaf9] border-[#e7e5e4]"}`}>
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-24">
           <Link href={localePath("/")} className="flex items-center gap-3 shrink-0">
-            <img src="/images/logo.png" alt="Collector In Town" className={`h-20 w-auto ${!isDark ? "rounded-xl" : ""}`} />
+            <img src="/images/logo.png" alt="Collector In Town" className="h-20 w-auto rounded-lg" style={{ opacity: 1, filter: "none" }} />
             <span className="font-[family-name:var(--font-cinzel)] text-lg font-bold hidden sm:block text-[#c9a84c]">
               Collector In Town
             </span>
