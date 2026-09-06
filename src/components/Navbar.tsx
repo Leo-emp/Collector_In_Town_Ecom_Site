@@ -44,7 +44,7 @@ export function Navbar({ lang, dict }: NavbarProps) {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-24">
           <Link href={localePath("/")} className="flex items-center gap-3 shrink-0">
-            <img src="/images/logo.png" alt="Collector In Town" className="h-20 w-auto rounded-lg" style={{ opacity: 1, filter: "none" }} />
+            <img src="/images/logo.png" alt="Collector In Town" className="h-20 w-auto rounded-lg bg-black" />
             <span className="font-[family-name:var(--font-cinzel)] text-lg font-bold hidden sm:block text-[#c9a84c]">
               Collector In Town
             </span>

@@ -23,7 +23,7 @@ export function Footer({ lang, dict }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           <div>
             <Link href={localePath("/")} className="inline-flex items-center gap-3 mb-4">
-              <img src="/images/logo.png" alt="Collector In Town" className="h-28 w-auto rounded-lg" style={{ opacity: 1, filter: "none" }} />
+              <img src="/images/logo.png" alt="Collector In Town" className="h-28 w-auto rounded-lg bg-black" />
               <span className={`font-[family-name:var(--font-cinzel)] text-2xl font-bold ${isDark ? "text-[#c9a84c]" : "text-[#7a5c1f]"}`}>
                 Collector In Town
               </span>
