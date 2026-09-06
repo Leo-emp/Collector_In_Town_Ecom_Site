@@ -32,7 +32,7 @@ export function HeroSection({ lang, dict }: HeroSectionProps) {
       {/* Gradient overlay — light mode uses a much softer gradient to keep cars visible */}
       <div className={`absolute inset-0 z-[1] ${isDark
         ? "bg-gradient-to-t from-[#0a0a0a]/90 via-transparent to-transparent"
-        : "bg-gradient-to-t from-[#f5f3ee] via-transparent to-transparent"
+        : ""
       }`} />
 
       {/* CTA buttons — positioned at the bottom */}
@@ -65,7 +65,7 @@ export function HeroSection({ lang, dict }: HeroSectionProps) {
       {/* Bottom fade — softer in light mode */}
       <div className={`absolute bottom-0 left-0 right-0 z-[2] bg-gradient-to-t to-transparent ${isDark
         ? "h-20 from-[#0a0a0a]"
-        : "h-20 from-[#f5f3ee]"
+        : "h-10 from-[#f5f3ee]"
       }`} />
     </section>
   );
