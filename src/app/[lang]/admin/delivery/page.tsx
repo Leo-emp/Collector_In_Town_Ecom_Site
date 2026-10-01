@@ -19,11 +19,14 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
   const { lang } = use(params);
   // All delivery zones from the API
   const [zones, setZones] = useState<DeliveryZone[]>([]);
-  // Which zone is currently being edited (by ID)
   const [editing, setEditing] = useState<string | null>(null);
-  // Temp values while editing
   const [editFee, setEditFee] = useState(0);
   const [editEta, setEditEta] = useState("");
+  // Add zone form
+  const [showAdd, setShowAdd] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newFee, setNewFee] = useState(0);
+  const [newEta, setNewEta] = useState("");
   // UI state
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -77,7 +80,34 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
     }
   };
 
-  // Toggle zone active/inactive
+  // Create a new zone via POST
+  const handleCreate = async () => {
+    if (!newName.trim()) return;
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/delivery-zones", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nameEn: newName.trim(),
+          fee: newFee,
+          estimatedTime: newEta || null,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to create zone");
+      setShowAdd(false);
+      setNewName("");
+      setNewFee(0);
+      setNewEta("");
+      await loadZones();
+    } catch {
+      setError("Failed to create zone");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const toggleActive = async (zone: DeliveryZone) => {
     try {
       const res = await fetch(`/api/admin/delivery-zones/${zone.id}`, {
@@ -102,9 +132,61 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
 
   return (
     <div>
-      <h1 className="font-[family-name:var(--font-cinzel)] text-2xl text-text-primary mb-6">Delivery Zones</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="font-[family-name:var(--font-cinzel)] text-2xl text-text-primary">Delivery Zones</h1>
+        <button
+          onClick={() => setShowAdd(!showAdd)}
+          className="px-4 py-2 bg-accent text-background rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
+        >
+          {showAdd ? "Cancel" : "+ Add Zone"}
+        </button>
+      </div>
 
-      {/* Error banner */}
+      {/* Add zone form */}
+      {showAdd && (
+        <div className="bg-surface rounded-xl border border-border p-5 mb-6">
+          <h3 className="text-text-primary font-semibold mb-4">New Delivery Zone</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+            <div>
+              <label className="text-text-muted text-xs block mb-1">Zone Name</label>
+              <input
+                type="text"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="e.g. Sagaing"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent"
+              />
+            </div>
+            <div>
+              <label className="text-text-muted text-xs block mb-1">Fee (MMK)</label>
+              <input
+                type="number"
+                value={newFee}
+                onChange={(e) => setNewFee(parseInt(e.target.value) || 0)}
+                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent"
+              />
+            </div>
+            <div>
+              <label className="text-text-muted text-xs block mb-1">Estimated Delivery</label>
+              <input
+                type="text"
+                value={newEta}
+                onChange={(e) => setNewEta(e.target.value)}
+                placeholder="e.g. 2-3 days"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent"
+              />
+            </div>
+          </div>
+          <button
+            onClick={handleCreate}
+            disabled={saving || !newName.trim()}
+            className="px-4 py-2 bg-accent text-background rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-50"
+          >
+            {saving ? "Creating..." : "Create Zone"}
+          </button>
+        </div>
+      )}
+
       {error && (
         <div className="bg-error/10 border border-error/20 rounded-lg px-4 py-3 mb-6 text-error text-sm">
           {error}
