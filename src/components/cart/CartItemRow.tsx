@@ -29,7 +29,7 @@ interface CartItemRowProps {
 
 export function CartItemRow({ product, quantity, lang, dict }: CartItemRowProps) {
   const { updateQuantity, removeItem } = useCart();
-  const name = lang === "my" ? product.name_my : product.name_en;
+  const name = product.name_en;
   const lineTotal = product.price * quantity;
 
   return (

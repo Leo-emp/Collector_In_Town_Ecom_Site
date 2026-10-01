@@ -98,7 +98,7 @@ export async function NewArrivalsStrip({ lang, dict }: NewArrivalsStripProps) {
                   {product.photo ? (
                     <img
                       src={product.photo}
-                      alt={lang === "my" ? product.name_my : product.name_en}
+                      alt={product.name_en}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
@@ -120,7 +120,7 @@ export async function NewArrivalsStrip({ lang, dict }: NewArrivalsStripProps) {
                 </p>
                 <h3 className="text-text-primary text-sm font-medium line-clamp-2 mb-1
                                group-hover:text-accent transition-colors">
-                  {lang === "my" ? product.name_my : product.name_en}
+                  {product.name_en}
                 </h3>
                 <p className="text-accent font-semibold text-sm">
                   {formatPrice(product.price)}

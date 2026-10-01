@@ -56,7 +56,7 @@ export function CartSummary({ subtotal, lang, dict }: CartSummaryProps) {
           <option value="">-- {dict.checkout.deliveryZone} --</option>
           {DELIVERY_ZONES.map((z) => (
             <option key={z.id} value={z.id}>
-              {lang === "my" ? z.name_my : z.name_en} — {formatPrice(z.fee)}
+              {z.name_en} — {formatPrice(z.fee)}
             </option>
           ))}
         </select>

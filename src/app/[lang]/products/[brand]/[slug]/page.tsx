@@ -66,11 +66,8 @@ export default async function ProductPage({
   // Extract image URLs for the photo gallery
   const photoUrls = images.map((img) => img.url);
 
-  // Get display values based on locale
-  const name = lang === "my" && product.nameMy ? product.nameMy : product.nameEn;
-  const description = lang === "my" && product.descriptionMy
-    ? product.descriptionMy
-    : product.descriptionEn;
+  const name = product.nameEn;
+  const description = product.descriptionEn;
   const isInStock = product.stockCount > 0 && product.status === "active";
 
   // Related products — up to 4 from the same brand, excluding current product

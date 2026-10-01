@@ -267,8 +267,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
   // Shared input styles
   const inputClass = "w-full bg-background border border-border rounded-lg px-3 py-2.5 text-text-primary text-sm placeholder:text-text-muted focus:outline-none focus:border-accent";
 
-  // Helper to get product name based on locale
-  const getName = (p: ProductData) => lang === "my" && p.nameMy ? p.nameMy : p.nameEn;
+  const getName = (p: ProductData) => p.nameEn;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -358,7 +357,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
                 <option value="">-- {dict.checkout.deliveryZone} --</option>
                 {zones.map((z) => (
                   <option key={z.id} value={z.id}>
-                    {lang === "my" && z.nameMy ? z.nameMy : z.nameEn} — {formatPrice(z.fee)}
+                    {z.nameEn} — {formatPrice(z.fee)}
                     {z.estimatedTime ? ` (${z.estimatedTime})` : ""}
                   </option>
                 ))}
@@ -509,7 +508,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
               <p className="text-text-secondary text-sm">{delivery.address}</p>
               <p className="text-text-secondary text-sm">
                 {delivery.township}, {delivery.city}
-                {zone && ` — ${lang === "my" && zone.nameMy ? zone.nameMy : zone.nameEn}`}
+                {zone && ` — ${zone.nameEn}`}
               </p>
               {delivery.notes && (
                 <p className="text-text-muted text-xs mt-1">{delivery.notes}</p>

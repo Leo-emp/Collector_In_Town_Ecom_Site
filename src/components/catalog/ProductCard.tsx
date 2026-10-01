@@ -21,8 +21,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, lang, dict }: ProductCardProps) {
-  // Determine display name based on locale
-  const name = lang === "my" ? product.name_my : product.name_en;
+  const name = product.name_en;
 
   // Stock status — we don't show the actual count, just in-stock or sold out
   const isInStock = product.stock_count > 0 && product.status === "active";
