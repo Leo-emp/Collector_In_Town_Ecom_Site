@@ -6,6 +6,7 @@ import { db } from "@/lib/drizzle";
 import { orders, orderItems, products, deliveryZones, promoCodes } from "@/lib/schema";
 import { orderSchema } from "@/lib/validation";
 import { checkRateLimit, ORDER_RATE_LIMIT } from "@/lib/rate-limit";
+import { sendAdminOrderNotification } from "@/lib/email";
 import { eq } from "drizzle-orm";
 
 // Generate human-readable order number: CIT-XXXXX (5 random alphanumeric chars)
@@ -196,6 +197,27 @@ export async function POST(request: Request) {
     .select()
     .from(orders)
     .where(eq(orders.id, orderId));
+
+  // Send admin notification email (non-blocking)
+  sendAdminOrderNotification({
+    orderNumber,
+    customerName: contact.name,
+    customerEmail: contact.email,
+    customerPhone: contact.phone,
+    items: resolvedItems.map((i) => ({
+      name: i.productName,
+      quantity: i.quantity,
+      price: i.productPrice,
+    })),
+    subtotal,
+    deliveryFee,
+    discount: discountAmount,
+    total,
+    paymentMethod: payment_method,
+    address: delivery.address,
+    township: delivery.township,
+    city: delivery.city,
+  }).catch(() => {});
 
   return NextResponse.json(
     {
