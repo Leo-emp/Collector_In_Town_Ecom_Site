@@ -50,7 +50,7 @@ export function LanguageSwitcher({ lang, dict }: LanguageSwitcherProps) {
           d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M12 3a14.25 14.25 0 014 9 14.25 14.25 0 01-4 9 14.25 14.25 0 01-4-9 14.25 14.25 0 014-9z"
         />
       </svg>
-      <span>{otherLabel}</span>
+{/* Label hidden — globe icon is self-explanatory */}
     </button>
   );
 }

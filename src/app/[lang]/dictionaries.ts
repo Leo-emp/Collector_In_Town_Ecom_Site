@@ -7,7 +7,6 @@ import "server-only";
 // Each function lazy-loads the JSON file only when that locale is requested
 const dictionaries = {
   en: () => import("./dictionaries/en.json").then((mod) => mod.default),
-  my: () => import("./dictionaries/my.json").then((mod) => mod.default),
 };
 
 // Type for supported locales — derived from the dictionaries object keys

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BRANDS } from "@/lib/constants";
-import { LanguageSwitcher } from "./LanguageSwitcher";
+
 import { useCart } from "@/context/CartContext";
 import { useTheme } from "@/context/ThemeContext";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
@@ -44,8 +44,8 @@ export function Navbar({ lang, dict }: NavbarProps) {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-24">
           <Link href={localePath("/")} className="flex items-center gap-3 shrink-0">
-            <img src="/images/logo.png" alt="Collector In Town" className={`h-20 w-auto ${!isDark ? "[filter:drop-shadow(0_0_1px_rgba(0,0,0,0.6))_drop-shadow(0_0_4px_rgba(0,0,0,0.3))]" : ""}`} />
-            <span className="font-[family-name:var(--font-cinzel)] text-lg font-bold hidden sm:block text-[#c9a84c]">
+            <img src="/images/logo.png" alt="Collector In Town" className="h-20 w-auto" />
+            <span className={`font-[family-name:var(--font-cinzel)] text-lg font-bold hidden sm:block ${isDark ? "text-[#c9a84c]" : "text-[#7a5c1f]"}`}>
               Collector In Town
             </span>
           </Link>
@@ -70,8 +70,6 @@ export function Navbar({ lang, dict }: NavbarProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <LanguageSwitcher lang={lang} dict={dict} />
-
             <Link
               href={localePath("/cart")}
               className={`relative p-2 rounded-lg transition-colors ${isDark ? "text-[#a3a3a3] hover:text-[#f5f5f5] hover:bg-[#1a1a1a]" : "text-[#44403c] hover:text-[#000000] hover:bg-[#f5f5f4]"}`}

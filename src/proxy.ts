@@ -3,24 +3,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Supported locales — English and Burmese
-const LOCALES = ["en", "my"];
+// Supported locales — English only
+const LOCALES = ["en"];
 const DEFAULT_LOCALE = "en";
-
-// Detect preferred locale from Accept-Language header
-// Falls back to English if Burmese isn't preferred
-function getPreferredLocale(request: NextRequest): string {
-  // Check Accept-Language header for Burmese preference
-  const acceptLang = request.headers.get("accept-language") || "";
-
-  // Simple check — look for "my" (Burmese) in the header
-  // If found before "en", use Burmese; otherwise default to English
-  if (acceptLang.includes("my")) {
-    return "my";
-  }
-
-  return DEFAULT_LOCALE;
-}
 
 // Main proxy function — intercepts requests before they reach routes
 export function proxy(request: NextRequest) {
@@ -43,8 +28,7 @@ export function proxy(request: NextRequest) {
 
   // No locale prefix — redirect to the preferred locale
   // e.g. /products → /en/products
-  const locale = getPreferredLocale(request);
-  request.nextUrl.pathname = `/${locale}${pathname}`;
+  request.nextUrl.pathname = `/${DEFAULT_LOCALE}${pathname}`;
   return NextResponse.redirect(request.nextUrl);
 }
 
