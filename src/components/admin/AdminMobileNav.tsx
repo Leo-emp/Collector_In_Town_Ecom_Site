@@ -77,18 +77,17 @@ export function AdminMobileNav({ lang, navItems }: AdminMobileNavProps) {
             })}
 
             <div className="border-t border-border mt-3 pt-3">
-              <form action="/api/admin/logout" method="POST">
-                <button
-                  type="submit"
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-text-muted
-                             hover:text-error hover:bg-error/10 transition-colors w-full"
-                >
-                  <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  Logout
-                </button>
-              </form>
+              <Link
+                href={`/${lang}/admin-login`}
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-text-muted
+                           hover:text-error hover:bg-error/10 transition-colors w-full"
+              >
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Logout
+              </Link>
             </div>
           </nav>
         </div>

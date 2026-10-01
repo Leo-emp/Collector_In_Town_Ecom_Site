@@ -1,42 +1,50 @@
-// Admin login page — single password field to access the admin dashboard
-// Lives at /[lang]/admin-login (OUTSIDE the admin layout to avoid redirect loop)
+// Admin login page — uses regular Better Auth sign-in
+// If the user is already signed in with an admin account, redirects to dashboard
+// Otherwise shows email/password login form
 "use client";
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 
 export default function AdminLoginPage() {
-  // Get current locale from URL params
   const { lang } = useParams<{ lang: string }>();
   const router = useRouter();
 
-  // Form state
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Submit the password to the login API
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    // Call the login API endpoint
-    const res = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
+    try {
+      // Sign in with Better Auth using email/password
+      const result = await authClient.signIn.email({
+        email,
+        password,
+      });
 
-    if (res.ok) {
-      // Redirect to admin dashboard on success
-      router.push(`/${lang}/admin`);
-      // Refresh server components so the layout picks up the new cookie
-      router.refresh();
-    } else {
-      // Show error message from API
-      const data = await res.json().catch(() => ({}));
-      setError(data.error || "Login failed");
+      if (result.error) {
+        setError(result.error.message || "Invalid email or password");
+        setLoading(false);
+        return;
+      }
+
+      // Check if the signed-in user has admin access
+      const checkRes = await fetch("/api/admin/check");
+      if (checkRes.ok) {
+        router.push(`/${lang}/admin`);
+        router.refresh();
+      } else {
+        setError("This account does not have admin access");
+        setLoading(false);
+      }
+    } catch {
+      setError("Sign in failed. Please try again.");
       setLoading(false);
     }
   };
@@ -44,26 +52,39 @@ export default function AdminLoginPage() {
   return (
     <div className="min-h-[70vh] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="font-[family-name:var(--font-cinzel)] text-3xl text-text-primary mb-2">
             Admin Access
           </h1>
           <p className="text-text-muted text-sm">
-            Enter the admin password to continue
+            Sign in with your admin account
           </p>
         </div>
 
-        {/* Login form */}
         <form onSubmit={handleSubmit} className="bg-surface rounded-xl border border-border p-6 space-y-5">
-          {/* Error message */}
           {error && (
             <div className="bg-error/10 border border-error/20 text-error text-sm rounded-lg px-4 py-3">
               {error}
             </div>
           )}
 
-          {/* Password input */}
+          <div>
+            <label htmlFor="email" className="block text-text-secondary text-sm font-medium mb-1.5">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-text-primary
+                         placeholder:text-text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+              placeholder="admin@example.com"
+              autoFocus
+            />
+          </div>
+
           <div>
             <label htmlFor="password" className="block text-text-secondary text-sm font-medium mb-1.5">
               Password
@@ -76,19 +97,17 @@ export default function AdminLoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-text-primary
                          placeholder:text-text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
-              placeholder="Enter admin password"
-              autoFocus
+              placeholder="Enter your password"
             />
           </div>
 
-          {/* Submit button */}
           <button
             type="submit"
             disabled={loading}
             className="w-full bg-accent text-background py-3 rounded-lg font-semibold text-sm
                        hover:bg-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Verifying..." : "Access Dashboard"}
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
       </div>

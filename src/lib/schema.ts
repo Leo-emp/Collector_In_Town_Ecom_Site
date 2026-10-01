@@ -15,6 +15,8 @@ export const user = sqliteTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: integer("emailVerified").notNull().default(0),
   image: text("image"),
+  // "user" (default) or "admin" — controls dashboard access
+  role: text("role").notNull().default("user"),
   createdAt: text("createdAt").notNull().default(sql`(current_timestamp)`),
   updatedAt: text("updatedAt").notNull().default(sql`(current_timestamp)`),
 });

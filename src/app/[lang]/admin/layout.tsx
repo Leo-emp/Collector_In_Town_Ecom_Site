@@ -108,20 +108,18 @@ export default async function AdminLayout({
           ))}
         </nav>
 
-        {/* Logout button — at the bottom of the sidebar */}
+        {/* Logout link — at the bottom of the sidebar */}
         <div className="p-3 mt-auto border-t border-border">
-          <form action="/api/admin/logout" method="POST">
-            <button
-              type="submit"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-muted
-                         hover:text-error hover:bg-error/10 transition-colors w-full"
-            >
-              <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Logout
-            </button>
-          </form>
+          <Link
+            href={`/${lang}/admin-login`}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-muted
+                       hover:text-error hover:bg-error/10 transition-colors w-full"
+          >
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Logout
+          </Link>
         </div>
       </aside>
 
