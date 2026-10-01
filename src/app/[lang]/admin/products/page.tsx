@@ -104,18 +104,18 @@ export default async function AdminProductsPage({
         ))}
       </div>
 
-      {/* Add Product button — pre-selects brand if filtered */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex gap-4">
-          <div className="bg-surface rounded-lg border border-border px-4 py-2 text-sm">
+      {/* Add Product button + stats */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
+        <div className="flex flex-wrap gap-2">
+          <div className="bg-surface rounded-lg border border-border px-3 py-1.5 text-sm">
             <span className="text-text-muted">Showing: </span>
             <span className="text-text-primary font-medium">{allProducts.length}</span>
           </div>
-          <div className="bg-surface rounded-lg border border-border px-4 py-2 text-sm">
+          <div className="bg-surface rounded-lg border border-border px-3 py-1.5 text-sm">
             <span className="text-text-muted">Active: </span>
             <span className="text-success font-medium">{activeCount?.count || 0}</span>
           </div>
-          <div className="bg-surface rounded-lg border border-border px-4 py-2 text-sm">
+          <div className="bg-surface rounded-lg border border-border px-3 py-1.5 text-sm">
             <span className="text-text-muted">Sold Out: </span>
             <span className="text-error font-medium">{soldOutCount?.count || 0}</span>
           </div>
@@ -123,7 +123,7 @@ export default async function AdminProductsPage({
         <Link
           href={`/${lang}/admin/products/new${activeBrand ? `?brand=${activeBrand}` : ""}`}
           className="px-4 py-2.5 bg-accent text-background rounded-lg font-semibold text-sm
-                     hover:bg-accent-hover transition-colors"
+                     hover:bg-accent-hover transition-colors shrink-0"
         >
           + Add {activeBrand ? BRANDS.find((b) => b.slug === activeBrand)?.name || "Product" : "Product"}
         </Link>

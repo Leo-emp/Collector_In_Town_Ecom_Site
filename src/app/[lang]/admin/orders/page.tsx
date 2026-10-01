@@ -76,8 +76,32 @@ export default async function AdminOrdersPage({ params }: { params: Promise<{ la
         ))}
       </div>
 
-      {/* Orders table */}
-      <div className="bg-surface rounded-xl border border-border overflow-hidden">
+      {/* Orders — mobile cards */}
+      <div className="md:hidden space-y-3">
+        {allOrders.length === 0 ? (
+          <p className="text-text-muted text-center py-8">No orders yet</p>
+        ) : (
+          allOrders.map((order) => (
+            <Link key={order.id} href={`/${lang}/admin/orders/${order.id}`}
+              className="block bg-surface rounded-xl border border-border p-4 hover:bg-surface-hover/50 transition-colors">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-accent font-medium text-sm">{order.orderNumber}</span>
+                <span className={`text-xs font-medium px-2.5 py-1 rounded-full capitalize ${statusColor(order.orderStatus)}`}>
+                  {order.orderStatus}
+                </span>
+              </div>
+              <p className="text-text-primary text-sm">{order.customerName}</p>
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-text-muted text-xs">{formatDate(order.createdAt)}</span>
+                <span className="text-text-primary font-medium text-sm">{formatPrice(order.total)}</span>
+              </div>
+            </Link>
+          ))
+        )}
+      </div>
+
+      {/* Orders — desktop table */}
+      <div className="hidden md:block bg-surface rounded-xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>

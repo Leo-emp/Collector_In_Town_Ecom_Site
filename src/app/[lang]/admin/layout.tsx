@@ -9,6 +9,7 @@ import { getDictionary, hasLocale } from "../dictionaries";
 import { notFound, redirect } from "next/navigation";
 import { verifyAdminSession } from "@/lib/admin-auth";
 import { BRANDS } from "@/lib/constants";
+import { AdminMobileNav } from "@/components/admin/AdminMobileNav";
 
 // Admin sidebar nav items — icon SVG paths + route suffixes
 const ADMIN_NAV = [
@@ -51,10 +52,18 @@ export default async function AdminLayout({
 
   const basePath = `/${lang}/admin`;
 
+  const mobileNavItems = ADMIN_NAV.map((item) => ({
+    ...item,
+    label: NAV_LABELS[item.key],
+  }));
+
   return (
-    <div className="flex min-h-[calc(100vh-64px)]">
+    <div className="flex flex-col lg:flex-row min-h-screen">
+      {/* Mobile nav — visible only on small screens */}
+      <AdminMobileNav lang={lang} navItems={mobileNavItems} />
+
       {/* Sidebar — hidden on mobile */}
-      <aside className="w-64 bg-surface border-r border-border flex-shrink-0 hidden lg:block">
+      <aside className="w-64 bg-surface border-r border-border flex-shrink-0 hidden lg:flex lg:flex-col">
         <div className="p-4 border-b border-border">
           {/* Back to store link */}
           <Link href={`/${lang}`} className="text-accent text-xs hover:underline">

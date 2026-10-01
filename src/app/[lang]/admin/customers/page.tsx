@@ -39,7 +39,26 @@ export default async function AdminCustomersPage({ params }: { params: Promise<{
 
       <p className="text-text-muted text-sm mb-6">{customers.length} unique customer{customers.length !== 1 ? "s" : ""}</p>
 
-      <div className="bg-surface rounded-xl border border-border overflow-hidden">
+      {/* Customers — mobile cards */}
+      <div className="md:hidden space-y-3">
+        {customers.length === 0 ? (
+          <p className="text-text-muted text-center py-8">No customers yet — they&apos;ll appear here after the first order</p>
+        ) : (
+          customers.map((c) => (
+            <div key={c.email} className="bg-surface rounded-xl border border-border p-4">
+              <p className="text-text-primary font-medium text-sm">{c.name}</p>
+              <p className="text-text-muted text-xs mb-2">{c.email}</p>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-text-muted">{c.orderCount} order{c.orderCount !== 1 ? "s" : ""}</span>
+                <span className="text-accent font-medium">{formatPrice(Number(c.totalSpent) || 0)}</span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Customers — desktop table */}
+      <div className="hidden md:block bg-surface rounded-xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
