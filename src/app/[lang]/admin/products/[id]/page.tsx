@@ -38,7 +38,7 @@ const EMPTY_FORM = {
   price: 0,
   stock_count: 0,
   status: "active",
-};
+} as const;
 
 export default function AdminProductEditPage({
   params,
@@ -226,49 +226,26 @@ export default function AdminProductEditPage({
         <div className="bg-surface rounded-xl border border-border p-5 space-y-4">
           <h2 className="text-text-primary font-semibold text-sm">Product Information</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-text-secondary text-sm block mb-1.5">Name (English)</label>
-              <input
-                type="text"
-                value={form.name_en}
-                onChange={(e) => setForm({ ...form, name_en: e.target.value })}
-                className={inputClass}
-                placeholder="Nissan GT-R R35 Liberty Walk"
-                required
-              />
-            </div>
-            <div>
-              <label className="text-text-secondary text-sm block mb-1.5">Name (Burmese)</label>
-              <input
-                type="text"
-                value={form.name_my}
-                onChange={(e) => setForm({ ...form, name_my: e.target.value })}
-                className={inputClass}
-                placeholder="နစ်ဆန် GT-R R35"
-              />
-            </div>
+          <div>
+            <label className="text-text-secondary text-sm block mb-1.5">Product Name</label>
+            <input
+              type="text"
+              value={form.name_en}
+              onChange={(e) => setForm({ ...form, name_en: e.target.value })}
+              className={inputClass}
+              placeholder="Nissan GT-R R35 Liberty Walk"
+              required
+            />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-text-secondary text-sm block mb-1.5">Description (English)</label>
-              <textarea
-                value={form.description_en}
-                onChange={(e) => setForm({ ...form, description_en: e.target.value })}
-                className={`${inputClass} resize-none h-24`}
-                placeholder="Product description..."
-              />
-            </div>
-            <div>
-              <label className="text-text-secondary text-sm block mb-1.5">Description (Burmese)</label>
-              <textarea
-                value={form.description_my}
-                onChange={(e) => setForm({ ...form, description_my: e.target.value })}
-                className={`${inputClass} resize-none h-24`}
-                placeholder="ကုန်ပစ္စည်း ဖော်ပြချက်..."
-              />
-            </div>
+          <div>
+            <label className="text-text-secondary text-sm block mb-1.5">Description</label>
+            <textarea
+              value={form.description_en}
+              onChange={(e) => setForm({ ...form, description_en: e.target.value })}
+              className={`${inputClass} resize-none h-24`}
+              placeholder="Product description..."
+            />
           </div>
         </div>
 
@@ -372,30 +349,36 @@ export default function AdminProductEditPage({
             </div>
           )}
 
-          {/* Upload area — only available for existing products (need an ID for the URL) */}
           {isNew ? (
-            <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-              <p className="text-text-muted text-sm">Save the product first, then upload photos</p>
-            </div>
-          ) : (
-            <label className="border-2 border-dashed border-border rounded-lg p-8 text-center block cursor-pointer hover:border-accent/50 transition-colors">
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                multiple
-                onChange={handleImageUpload}
-                className="hidden"
-                disabled={uploading}
-              />
+            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
               <svg className="w-10 h-10 text-text-muted/30 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1}
                   d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <p className="text-text-muted text-sm">
-                {uploading ? "Uploading..." : "Click to upload photos"}
-              </p>
-              <p className="text-text-muted text-xs mt-1">JPEG, PNG, or WebP — max 5MB each, up to 6 total</p>
-            </label>
+              <p className="text-text-primary text-sm font-medium mb-1">Photos available after saving</p>
+              <p className="text-text-muted text-xs">Click &quot;Create Product&quot; below first, then you can upload photos</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <label className="border-2 border-dashed border-border rounded-lg p-6 text-center block cursor-pointer hover:border-accent/50 active:border-accent transition-colors">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  disabled={uploading}
+                />
+                <svg className="w-10 h-10 text-text-muted/30 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p className="text-accent text-sm font-medium">
+                  {uploading ? "Uploading..." : "Tap to choose photos"}
+                </p>
+                <p className="text-text-muted text-xs mt-1">JPEG, PNG, or WebP — max 5MB each, up to 6 total</p>
+              </label>
+            </div>
           )}
         </div>
 
