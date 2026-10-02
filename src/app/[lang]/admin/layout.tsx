@@ -43,11 +43,10 @@ export default async function AdminLayout({
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
 
-  // Check admin session cookie — redirect to login if not authenticated
+  // Check if signed-in user is admin — redirect to sign-in if not
   const isAdmin = await verifyAdminSession();
   if (!isAdmin) {
-    // Login page is at /[lang]/admin-login (outside this layout to avoid redirect loop)
-    redirect(`/${lang}/admin-login`);
+    redirect(`/${lang}/sign-in`);
   }
 
   const basePath = `/${lang}/admin`;
@@ -111,7 +110,7 @@ export default async function AdminLayout({
         {/* Logout link — at the bottom of the sidebar */}
         <div className="p-3 mt-auto border-t border-border">
           <Link
-            href={`/${lang}/admin-login`}
+            href={`/${lang}/sign-in`}
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-muted
                        hover:text-error hover:bg-error/10 transition-colors w-full"
           >

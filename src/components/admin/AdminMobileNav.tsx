@@ -78,7 +78,7 @@ export function AdminMobileNav({ lang, navItems }: AdminMobileNavProps) {
 
             <div className="border-t border-border mt-3 pt-3">
               <Link
-                href={`/${lang}/admin-login`}
+                href={`/${lang}/sign-in`}
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-text-muted
                            hover:text-error hover:bg-error/10 transition-colors w-full"
