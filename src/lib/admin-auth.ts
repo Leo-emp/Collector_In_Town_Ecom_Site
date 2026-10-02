@@ -4,8 +4,8 @@
 import { auth } from "./auth";
 import { headers } from "next/headers";
 
-// The admin email — set via env var or hardcoded fallback
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "thihahtut.ygn2015@gmail.com";
+// The admin email — must be set via ADMIN_EMAIL env var
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "";
 
 // Verify that the current request is from the admin user
 export async function verifyAdminSession(): Promise<boolean> {
@@ -14,9 +14,9 @@ export async function verifyAdminSession(): Promise<boolean> {
       headers: await headers(),
     });
 
-    if (!session?.user?.email) return false;
+    if (!session?.user?.email || !ADMIN_EMAIL) return false;
 
-    // Admin = the user whose email matches ADMIN_EMAIL
+    // Admin = the user whose email matches ADMIN_EMAIL env var
     return session.user.email === ADMIN_EMAIL;
   } catch {
     return false;
