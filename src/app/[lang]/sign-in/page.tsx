@@ -31,7 +31,13 @@ export default function SignInPage() {
       return;
     }
 
-    router.push(`/${lang}/account`);
+    // Check if user is admin — redirect to dashboard instead of account
+    const checkRes = await fetch("/api/admin/check").catch(() => null);
+    if (checkRes?.ok) {
+      router.push(`/${lang}/admin`);
+    } else {
+      router.push(`/${lang}/account`);
+    }
   };
 
   return (
