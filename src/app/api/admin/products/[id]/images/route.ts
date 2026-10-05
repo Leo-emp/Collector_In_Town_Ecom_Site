@@ -5,6 +5,7 @@ import { put } from "@vercel/blob";
 import { db } from "@/lib/drizzle";
 import { productImages } from "@/lib/schema";
 import { verifyAdminSession } from "@/lib/admin-auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { MAX_PHOTOS_PER_PRODUCT, MAX_PHOTO_SIZE_MB, ACCEPTED_IMAGE_TYPES } from "@/lib/constants";
 import { eq, count } from "drizzle-orm";
 
@@ -15,6 +16,13 @@ export async function POST(
   // Verify admin session cookie
   if (!(await verifyAdminSession())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Rate limit uploads — 30 per minute per IP
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
+  const { allowed } = checkRateLimit(`upload:${ip}`, { windowMs: 60_000, maxRequests: 30 });
+  if (!allowed) {
+    return NextResponse.json({ error: "Too many uploads" }, { status: 429 });
   }
 
   // Get product ID from URL params

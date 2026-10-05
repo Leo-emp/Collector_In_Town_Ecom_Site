@@ -7,8 +7,16 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/drizzle";
 import { orders, orderItems } from "@/lib/schema";
 import { eq } from "drizzle-orm";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function GET(request: Request) {
+  // Rate limit tracking lookups — prevents token enumeration
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
+  const { allowed } = checkRateLimit(`track:${ip}`, { windowMs: 60_000, maxRequests: 10 });
+  if (!allowed) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   // Get tracking token from query params
   const { searchParams } = new URL(request.url);
   const token = searchParams.get("token");

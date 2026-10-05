@@ -133,21 +133,28 @@ export default function AdminProductEditPage({
     loadProduct();
   }, [loadProduct]);
 
-  // Upload files to a product by ID (used for both new and existing)
+  // Upload files to a product by ID — all in parallel for speed
   const uploadFilesToProduct = async (productId: string, files: File[]) => {
-    for (const file of files) {
-      const formData = new FormData();
-      formData.append("file", file);
+    const results = await Promise.allSettled(
+      files.map(async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
 
-      const res = await fetch(`/api/admin/products/${productId}/images`, {
-        method: "POST",
-        body: formData,
-      });
+        const res = await fetch(`/api/admin/products/${productId}/images`, {
+          method: "POST",
+          body: formData,
+        });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Upload failed");
-      }
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Upload failed");
+        }
+      })
+    );
+
+    const failed = results.filter((r) => r.status === "rejected");
+    if (failed.length > 0) {
+      throw new Error(`${failed.length} photo(s) failed to upload`);
     }
   };
 
