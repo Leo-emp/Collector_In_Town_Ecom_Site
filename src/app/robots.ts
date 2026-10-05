@@ -1,7 +1,7 @@
 // Robots.txt for search engine crawlers
 import type { MetadataRoute } from "next";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://collectorintown.com";
+const BASE_URL = "https://www.collectorintown.com";
 
 export default function robots(): MetadataRoute.Robots {
   return {
