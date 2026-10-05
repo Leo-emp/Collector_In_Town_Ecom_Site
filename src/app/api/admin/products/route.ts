@@ -68,6 +68,7 @@ export async function POST(request: Request) {
     brand: parsed.data.brand,
     scale: parsed.data.scale,
     price: parsed.data.price,
+    weight: parsed.data.weight || 0,
     stockCount: parsed.data.stock_count,
     status: parsed.data.status,
   });

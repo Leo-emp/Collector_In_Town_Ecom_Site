@@ -40,6 +40,7 @@ export async function PUT(
       brand: parsed.data.brand,
       scale: parsed.data.scale,
       price: parsed.data.price,
+      weight: parsed.data.weight || 0,
       stockCount: parsed.data.stock_count,
       status: parsed.data.status,
       // Update the timestamp to track when it was last modified

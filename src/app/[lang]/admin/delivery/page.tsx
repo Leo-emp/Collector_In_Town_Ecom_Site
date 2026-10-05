@@ -11,6 +11,7 @@ interface DeliveryZone {
   nameEn: string;
   nameMy: string | null;
   fee: number;
+  feePerKg: number;
   estimatedTime: string | null;
   isActive: number;
 }
@@ -21,11 +22,13 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
   const [zones, setZones] = useState<DeliveryZone[]>([]);
   const [editing, setEditing] = useState<string | null>(null);
   const [editFee, setEditFee] = useState(0);
+  const [editFeePerKg, setEditFeePerKg] = useState(0);
   const [editEta, setEditEta] = useState("");
   // Add zone form
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState("");
   const [newFee, setNewFee] = useState(0);
+  const [newFeePerKg, setNewFeePerKg] = useState(0);
   const [newEta, setNewEta] = useState("");
   // UI state
   const [loading, setLoading] = useState(true);
@@ -54,6 +57,7 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
   const startEdit = (zone: DeliveryZone) => {
     setEditing(zone.id);
     setEditFee(zone.fee);
+    setEditFeePerKg(zone.feePerKg || 0);
     setEditEta(zone.estimatedTime || "");
   };
 
@@ -67,6 +71,7 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fee: editFee,
+          fee_per_kg: editFeePerKg,
           eta: editEta,
         }),
       });
@@ -92,6 +97,7 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
         body: JSON.stringify({
           nameEn: newName.trim(),
           fee: newFee,
+          feePerKg: newFeePerKg,
           estimatedTime: newEta || null,
         }),
       });
@@ -99,6 +105,7 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
       setShowAdd(false);
       setNewName("");
       setNewFee(0);
+      setNewFeePerKg(0);
       setNewEta("");
       await loadZones();
     } catch {
@@ -146,7 +153,7 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
       {showAdd && (
         <div className="bg-surface rounded-xl border border-border p-5 mb-6">
           <h3 className="text-text-primary font-semibold mb-4">New Delivery Zone</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
             <div>
               <label className="text-text-muted text-xs block mb-1">Zone Name</label>
               <input
@@ -158,7 +165,19 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
               />
             </div>
             <div>
-              <label className="text-text-muted text-xs block mb-1">Fee (MMK)</label>
+              <label className="text-text-muted text-xs block mb-1">Estimated Delivery</label>
+              <input
+                type="text"
+                value={newEta}
+                onChange={(e) => setNewEta(e.target.value)}
+                placeholder="e.g. 2-3 days"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+            <div>
+              <label className="text-text-muted text-xs block mb-1">Base Fee (MMK)</label>
               <input
                 type="number"
                 value={newFee}
@@ -167,13 +186,13 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
               />
             </div>
             <div>
-              <label className="text-text-muted text-xs block mb-1">Estimated Delivery</label>
+              <label className="text-text-muted text-xs block mb-1">Fee per kg (MMK)</label>
               <input
-                type="text"
-                value={newEta}
-                onChange={(e) => setNewEta(e.target.value)}
-                placeholder="e.g. 2-3 days"
+                type="number"
+                value={newFeePerKg}
+                onChange={(e) => setNewFeePerKg(parseInt(e.target.value) || 0)}
                 className="w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent"
+                placeholder="0"
               />
             </div>
           </div>
@@ -213,13 +232,22 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
             {editing === zone.id ? (
               // Edit mode — inline form
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="text-text-muted text-xs block mb-1">Fee (MMK)</label>
+                    <label className="text-text-muted text-xs block mb-1">Base Fee (MMK)</label>
                     <input
                       type="number"
                       value={editFee}
                       onChange={(e) => setEditFee(parseInt(e.target.value) || 0)}
+                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-text-muted text-xs block mb-1">Per kg (MMK)</label>
+                    <input
+                      type="number"
+                      value={editFeePerKg}
+                      onChange={(e) => setEditFeePerKg(parseInt(e.target.value) || 0)}
                       className="w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent"
                     />
                   </div>
@@ -250,12 +278,18 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
                 </div>
               </div>
             ) : (
-              // View mode — display fee and ETA
+              // View mode — display base fee, per-kg fee, and ETA
               <div>
                 <div className="flex justify-between text-sm mb-3">
-                  <span className="text-text-muted">Delivery Fee</span>
+                  <span className="text-text-muted">Base Fee</span>
                   <span className="text-accent font-medium">{formatPrice(zone.fee)}</span>
                 </div>
+                {zone.feePerKg > 0 && (
+                  <div className="flex justify-between text-sm mb-3">
+                    <span className="text-text-muted">Per kg</span>
+                    <span className="text-accent font-medium">+ {formatPrice(zone.feePerKg)}/kg</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm mb-4">
                   <span className="text-text-muted">Estimated Delivery</span>
                   <span className="text-text-primary">{zone.estimatedTime || "—"}</span>

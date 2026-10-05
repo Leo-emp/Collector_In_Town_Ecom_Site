@@ -23,7 +23,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { nameEn, fee, estimatedTime } = body;
+  const { nameEn, fee, feePerKg, estimatedTime } = body;
 
   if (!nameEn || typeof fee !== "number") {
     return NextResponse.json({ error: "Name and fee are required" }, { status: 400 });
@@ -34,6 +34,7 @@ export async function POST(request: Request) {
     id,
     nameEn,
     fee,
+    feePerKg: feePerKg || 0,
     estimatedTime: estimatedTime || null,
     isActive: 1,
   });

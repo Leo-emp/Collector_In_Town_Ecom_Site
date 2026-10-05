@@ -18,7 +18,7 @@ export async function PUT(
 
   const { id } = await params;
 
-  // Validate body with Zod deliveryZoneSchema
+  // Validate body with Zod deliveryZoneSchema (partial — only update provided fields)
   const body = await request.json().catch(() => null);
   const parsed = deliveryZoneSchema.safeParse(body);
   if (!parsed.success) {
@@ -28,17 +28,19 @@ export async function PUT(
     );
   }
 
+  // Build update object — only set fields that were provided
+  const updates: Record<string, unknown> = {};
+  if (parsed.data.name_en !== undefined) updates.nameEn = parsed.data.name_en;
+  if (parsed.data.name_my !== undefined) updates.nameMy = parsed.data.name_my || null;
+  if (parsed.data.fee !== undefined) updates.fee = parsed.data.fee;
+  if (parsed.data.fee_per_kg !== undefined) updates.feePerKg = parsed.data.fee_per_kg;
+  if (parsed.data.eta !== undefined) updates.estimatedTime = parsed.data.eta || null;
+  if (parsed.data.is_active !== undefined) updates.isActive = parsed.data.is_active ? 1 : 0;
+
   // Update the delivery zone
   await db
     .update(deliveryZones)
-    .set({
-      nameEn: parsed.data.name_en,
-      nameMy: parsed.data.name_my || null,
-      fee: parsed.data.fee,
-      estimatedTime: parsed.data.eta || null,
-      // Convert boolean to SQLite integer (1/0)
-      isActive: parsed.data.is_active ? 1 : 0,
-    })
+    .set(updates)
     .where(eq(deliveryZones.id, id));
 
   // Fetch and return the updated zone

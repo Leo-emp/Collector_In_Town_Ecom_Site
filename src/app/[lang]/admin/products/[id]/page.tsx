@@ -43,6 +43,7 @@ const EMPTY_FORM = {
   brand: "",
   scale: "1:64",
   price: 0,
+  weight: 0,
   stock_count: 0,
   status: "active",
 };
@@ -107,6 +108,7 @@ export default function AdminProductEditPage({
         brand: product.brand || "",
         scale: product.scale || "1:64",
         price: product.price || 0,
+        weight: product.weight || 0,
         stock_count: product.stockCount || 0,
         status: product.status || "active",
       });
@@ -316,7 +318,7 @@ export default function AdminProductEditPage({
         <div className="bg-surface rounded-xl border border-border p-5 space-y-4">
           <h2 className="text-text-primary font-semibold text-sm">Specs & Pricing</h2>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div>
               <label className="text-text-secondary text-sm block mb-1.5">Brand</label>
               <select
@@ -345,6 +347,20 @@ export default function AdminProductEditPage({
                 <option value="1:18">1:18</option>
               </select>
             </div>
+            <div>
+              <label className="text-text-secondary text-sm block mb-1.5">Weight (grams)</label>
+              <input
+                type="number"
+                value={form.weight}
+                onChange={(e) => setForm({ ...form, weight: parseInt(e.target.value) || 0 })}
+                className={inputClass}
+                min={0}
+                placeholder="e.g. 150"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div>
               <label className="text-text-secondary text-sm block mb-1.5">Price (MMK)</label>
               <input

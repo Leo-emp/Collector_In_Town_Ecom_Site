@@ -53,8 +53,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid delivery zone" }, { status: 400 });
   }
 
-  // ─── Verify stock and calculate subtotal ──────────────
+  // ─── Verify stock and calculate subtotal + total weight ──
   let subtotal = 0;
+  let totalWeightGrams = 0;
   const resolvedItems: Array<{
     productId: string;
     productName: string;
@@ -85,8 +86,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Add to subtotal and snapshot the product details
+    // Add to subtotal, accumulate weight, and snapshot the product details
     subtotal += product.price * item.quantity;
+    totalWeightGrams += (product.weight || 0) * item.quantity;
     resolvedItems.push({
       productId: product.id,
       productName: product.nameEn,
@@ -131,8 +133,9 @@ export async function POST(request: Request) {
     }
   }
 
-  // ─── Calculate total ──────────────────────────────────
-  const deliveryFee = zone.fee;
+  // ─── Calculate total (base fee + weight-based per-kg fee) ──
+  const weightKg = Math.ceil(totalWeightGrams / 1000);
+  const deliveryFee = zone.fee + weightKg * (zone.feePerKg || 0);
   const total = subtotal - discountAmount + deliveryFee;
 
   // ─── Create the order ─────────────────────────────────

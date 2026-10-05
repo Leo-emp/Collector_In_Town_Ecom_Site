@@ -49,6 +49,7 @@ export const productSchema = z.object({
   brand: z.string().min(1),
   scale: z.string().min(1),
   price: z.number().int().min(0),
+  weight: z.number().int().min(0).optional(),
   stock_count: z.number().int().min(0),
   status: z.enum(["active", "draft", "sold_out", "discontinued"]),
 });
@@ -63,13 +64,14 @@ export const promoSchema = z.object({
   expires_at: z.string().optional(),
 });
 
-// Delivery zone update — admin
+// Delivery zone update — admin (all fields optional for partial updates)
 export const deliveryZoneSchema = z.object({
-  name_en: z.string().min(1).max(100),
+  name_en: z.string().min(1).max(100).optional(),
   name_my: z.string().max(100).optional(),
-  fee: z.number().int().min(0),
+  fee: z.number().int().min(0).optional(),
+  fee_per_kg: z.number().int().min(0).optional(),
   eta: z.string().max(50).optional(),
-  is_active: z.boolean(),
+  is_active: z.union([z.boolean(), z.number()]).optional(),
 });
 
 // Admin login — simple password check (single admin, no roles)

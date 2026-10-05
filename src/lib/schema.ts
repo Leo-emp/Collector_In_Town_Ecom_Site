@@ -75,6 +75,8 @@ export const products = sqliteTable("products", {
   scale: text("scale").notNull().default("1:64"),
   // Price in Myanmar Kyat — integer, no decimals
   price: integer("price").notNull(),
+  // Weight in grams — used for delivery fee calculation
+  weight: integer("weight").notNull().default(0),
   // How many units are in stock
   stockCount: integer("stock_count").notNull().default(0),
   // active | draft | sold_out | discontinued
@@ -115,8 +117,10 @@ export const deliveryZones = sqliteTable("delivery_zones", {
   nameEn: text("name_en").notNull(),
   // Myanmar zone name — shown when locale is "my"
   nameMy: text("name_my"),
-  // Delivery fee in MMK (Myanmar Kyat) — added to order total
+  // Base delivery fee in MMK — flat charge before weight calculation
   fee: integer("fee").notNull(),
+  // Fee per kg in MMK — multiplied by total order weight
+  feePerKg: integer("fee_per_kg").notNull().default(0),
   // Human-readable delivery estimate — e.g. "1-2 days"
   estimatedTime: text("estimated_time"),
   // SQLite boolean: 1 = active, 0 = inactive (hidden from checkout)

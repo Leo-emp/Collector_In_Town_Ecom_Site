@@ -8,6 +8,7 @@ import { getDictionary, hasLocale } from "./dictionaries";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { FeaturedShowcase } from "@/components/landing/FeaturedShowcase";
 import { NewArrivalsStrip } from "@/components/landing/NewArrivalsStrip";
+import { BrandProductsSection } from "@/components/landing/BrandProductsSection";
 import { BrandStory } from "@/components/landing/BrandStory";
 import { BrandLogos } from "@/components/landing/BrandLogos";
 import { ThemeToggle } from "@/components/landing/ThemeToggle";
@@ -37,6 +38,12 @@ export default async function HomePage({
 
       {/* Horizontal scrollable row of latest products */}
       <NewArrivalsStrip lang={lang} dict={dict} />
+
+      {/* Brand-specific product sections */}
+      <BrandProductsSection lang={lang} brandSlug="mini-gt" brandName="Mini GT" />
+      <BrandProductsSection lang={lang} brandSlug="hot-wheels" brandName="Hot Wheels" />
+      <BrandProductsSection lang={lang} brandSlug="inno64" brandName="Inno64" />
+      <BrandProductsSection lang={lang} brandSlug="pop-race" brandName="Pop Race" />
 
       {/* Cinematic brand story section */}
       <BrandStory dict={dict} />

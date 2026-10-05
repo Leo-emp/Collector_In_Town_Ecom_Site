@@ -15,6 +15,7 @@ interface DeliveryZone {
   nameEn: string;
   nameMy: string | null;
   fee: number;
+  feePerKg: number;
   estimatedTime: string | null;
 }
 
@@ -26,6 +27,7 @@ interface ProductData {
   slug: string;
   brand: string;
   price: number;
+  weight: number;
   images: Array<{ url: string }>;
 }
 
@@ -107,8 +109,14 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
   const subtotal = cartProducts.reduce(
     (sum, { product, quantity }) => sum + product.price * quantity, 0
   );
+  // Total weight in grams across all cart items
+  const totalWeightGrams = cartProducts.reduce(
+    (sum, { product, quantity }) => sum + (product.weight || 0) * quantity, 0
+  );
   const zone = zones.find((z) => z.id === delivery.zone);
-  const deliveryFee = zone?.fee || 0;
+  // Delivery fee = base fee + (weight in kg rounded up) × per-kg rate
+  const weightKg = Math.ceil(totalWeightGrams / 1000);
+  const deliveryFee = zone ? zone.fee + weightKg * (zone.feePerKg || 0) : 0;
   const total = subtotal + deliveryFee;
 
   const currentStepIndex = STEPS.indexOf(currentStep);
@@ -358,6 +366,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
                 {zones.map((z) => (
                   <option key={z.id} value={z.id}>
                     {z.nameEn} — {formatPrice(z.fee)}
+                    {z.feePerKg > 0 ? ` + ${formatPrice(z.feePerKg)}/kg` : ""}
                     {z.estimatedTime ? ` (${z.estimatedTime})` : ""}
                   </option>
                 ))}
