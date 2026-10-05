@@ -81,8 +81,7 @@ export default async function AdminDashboard({
   // Helper: status badge color
   const statusColor = (status: string) => {
     switch (status) {
-      case "delivered": return "bg-success/10 text-success";
-      case "shipped": return "bg-blue-500/10 text-blue-400";
+      case "done": return "bg-success/10 text-success";
       case "confirmed": return "bg-accent/10 text-accent";
       case "pending": return "bg-orange-500/10 text-orange-400";
       case "cancelled": return "bg-error/10 text-error";

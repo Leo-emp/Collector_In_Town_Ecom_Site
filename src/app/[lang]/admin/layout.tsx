@@ -103,6 +103,19 @@ export default async function AdminLayout({
                   ))}
                 </div>
               )}
+
+              {/* Order History sub-link under Orders */}
+              {item.key === "orders" && (
+                <div className="ml-8 mt-1 space-y-0.5">
+                  <Link
+                    href={`${basePath}/orders/history`}
+                    className="block px-3 py-1.5 rounded-lg text-xs text-text-muted
+                               hover:text-text-primary hover:bg-surface-hover transition-colors"
+                  >
+                    Order History
+                  </Link>
+                </div>
+              )}
             </div>
           ))}
         </nav>

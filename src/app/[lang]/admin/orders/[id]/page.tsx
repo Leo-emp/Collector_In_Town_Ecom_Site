@@ -37,8 +37,8 @@ interface OrderData {
   updatedAt: string;
 }
 
-// All valid statuses for the dropdowns
-const ORDER_STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
+// All valid statuses for the dropdown — pending → confirmed → done (or cancelled)
+const ORDER_STATUSES = ["pending", "confirmed", "done", "cancelled"];
 const PAYMENT_STATUSES = ["pending", "paid", "failed"];
 
 export default function AdminOrderDetailPage({
@@ -125,8 +125,7 @@ export default function AdminOrderDetailPage({
   // Status badge color helper
   const statusColor = (s: string) => {
     switch (s) {
-      case "delivered": case "paid": return "bg-success/10 text-success";
-      case "shipped": return "bg-blue-500/10 text-blue-400";
+      case "done": case "paid": return "bg-success/10 text-success";
       case "confirmed": return "bg-accent/10 text-accent";
       case "pending": return "bg-orange-500/10 text-orange-400";
       case "cancelled": case "failed": return "bg-error/10 text-error";

@@ -111,8 +111,7 @@
     "track": "Track",
     "pending": "Pending",
     "confirmed": "Confirmed",
-    "shipped": "Shipped",
-    "delivered": "Delivered",
+    "done": "Done",
     "cancelled": "Cancelled"
   },
   "footer": {

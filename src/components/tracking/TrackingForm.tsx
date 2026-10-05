@@ -7,7 +7,7 @@ import { formatPrice, formatDate } from "@/lib/format";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 
 // Order status steps in sequence
-const STATUS_STEPS = ["pending", "confirmed", "shipped", "delivered"] as const;
+const STATUS_STEPS = ["pending", "confirmed", "done"] as const;
 
 // Shape of tracking API response
 interface TrackedOrder {
@@ -84,8 +84,7 @@ export function TrackingForm({ lang, dict, initialToken }: TrackingFormProps) {
     const labels: Record<string, string> = {
       pending: dict.tracking.pending,
       confirmed: dict.tracking.confirmed,
-      shipped: dict.tracking.shipped,
-      delivered: dict.tracking.delivered,
+      done: dict.tracking.done || "Done",
       cancelled: dict.tracking.cancelled,
     };
     return labels[status] || status;

@@ -85,7 +85,7 @@ export const products = sqliteTable("products", {
   showTerms: integer("show_terms").notNull().default(1),
   // How many units are in stock
   stockCount: integer("stock_count").notNull().default(0),
-  // active | draft | sold_out | discontinued
+  // Product listing status: active | draft | sold_out | discontinued
   status: text("status").notNull().default("active"),
   // ISO timestamp — when the product was created
   createdAt: text("created_at")
@@ -191,7 +191,7 @@ export const orders = sqliteTable("orders", {
   paymentMethod: text("payment_method").notNull(),
   // Payment status: pending | paid | failed
   paymentStatus: text("payment_status").notNull().default("pending"),
-  // Order fulfillment status: pending | confirmed | shipped | delivered | cancelled
+  // Order fulfillment status: pending | confirmed | done | cancelled
   orderStatus: text("order_status").notNull().default("pending"),
   // Nullable FK — set when a promo code was applied at checkout
   promoCodeId: text("promo_code_id").references(() => promoCodes.id),

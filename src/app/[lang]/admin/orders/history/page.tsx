@@ -1,34 +1,37 @@
-// Admin Orders page — shows active orders (pending + confirmed)
-// Done and cancelled orders appear in Order History
+// Admin Order History — completed (done) and cancelled orders
+// Separated from active orders for a clean workflow
 // Server component — queries Turso directly
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { hasLocale } from "../../dictionaries";
+import { hasLocale } from "../../../dictionaries";
 import { formatPrice, formatDate } from "@/lib/format";
 import { db } from "@/lib/drizzle";
 import { orders, orderItems } from "@/lib/schema";
-import { desc, eq, or, count } from "drizzle-orm";
+import { desc, eq, count } from "drizzle-orm";
 
-// Force dynamic rendering — orders page queries the database
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Orders — Admin — Collector In Town" };
+export const metadata = { title: "Order History — Admin — Collector In Town" };
 
-// Statuses shown on this page (active orders only)
-const STATUSES = ["pending", "confirmed"] as const;
-
-export default async function AdminOrdersPage({ params }: { params: Promise<{ lang: string }> }) {
+export default async function OrderHistoryPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
 
-  // Fetch only active orders (pending + confirmed), newest first
-  const allOrders = await db
+  // Fetch completed orders (status = done)
+  const completedOrders = await db
     .select()
     .from(orders)
-    .where(or(eq(orders.orderStatus, "pending"), eq(orders.orderStatus, "confirmed")))
+    .where(eq(orders.orderStatus, "done"))
     .orderBy(desc(orders.createdAt));
 
-  // Get item counts per order in one query (group by orderId)
+  // Fetch cancelled orders
+  const cancelledOrders = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.orderStatus, "cancelled"))
+    .orderBy(desc(orders.createdAt));
+
+  // Get item counts per order
   const itemCounts = await db
     .select({
       orderId: orderItems.orderId,
@@ -37,68 +40,22 @@ export default async function AdminOrdersPage({ params }: { params: Promise<{ la
     .from(orderItems)
     .groupBy(orderItems.orderId);
 
-  // Build a lookup map for quick access: orderId → itemCount
   const itemCountMap = new Map(itemCounts.map((r) => [r.orderId, r.itemCount]));
 
-  // Count orders per status for the stats bar
-  const statusCounts = await db
-    .select({
-      status: orders.orderStatus,
-      count: count(),
-    })
-    .from(orders)
-    .groupBy(orders.orderStatus);
-
-  // Build status count map
-  const statusCountMap = new Map(statusCounts.map((r) => [r.status, r.count]));
-
-  // Helper: badge color per order status
-  const statusColor = (s: string) => {
-    switch (s) {
-      case "done": return "bg-success/10 text-success";
-      case "confirmed": return "bg-accent/10 text-accent";
-      case "pending": return "bg-orange-500/10 text-orange-400";
-      case "cancelled": return "bg-error/10 text-error";
-      default: return "bg-surface text-text-muted";
-    }
-  };
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="font-[family-name:var(--font-cinzel)] text-2xl text-text-primary">Orders</h1>
-        <Link
-          href={`/${lang}/admin/orders/history`}
-          className="text-accent text-sm hover:underline flex items-center gap-1"
-        >
-          Order History
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </Link>
-      </div>
-
-      {/* Status stats bar */}
-      <div className="flex gap-4 mb-6 flex-wrap">
-        {STATUSES.map((s) => (
-          <div key={s} className="bg-surface rounded-lg border border-border px-4 py-2 text-sm">
-            <span className="text-text-muted capitalize">{s}: </span>
-            <span className="text-text-primary font-medium">{statusCountMap.get(s) || 0}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Orders — mobile cards */}
+  // Renders a table/cards for a list of orders
+  const renderOrders = (orderList: typeof completedOrders, emptyMsg: string, statusColor: string) => (
+    <>
+      {/* Mobile cards */}
       <div className="md:hidden space-y-3">
-        {allOrders.length === 0 ? (
-          <p className="text-text-muted text-center py-8">No orders yet</p>
+        {orderList.length === 0 ? (
+          <p className="text-text-muted text-center py-6 text-sm">{emptyMsg}</p>
         ) : (
-          allOrders.map((order) => (
+          orderList.map((order) => (
             <Link key={order.id} href={`/${lang}/admin/orders/${order.id}`}
               className="block bg-surface rounded-xl border border-border p-4 hover:bg-surface-hover/50 transition-colors">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-accent font-medium text-sm">{order.orderNumber}</span>
-                <span className={`text-xs font-medium px-2.5 py-1 rounded-full capitalize ${statusColor(order.orderStatus)}`}>
+                <span className={`text-xs font-medium px-2.5 py-1 rounded-full capitalize ${statusColor}`}>
                   {order.orderStatus}
                 </span>
               </div>
@@ -112,7 +69,7 @@ export default async function AdminOrdersPage({ params }: { params: Promise<{ la
         )}
       </div>
 
-      {/* Orders — desktop table */}
+      {/* Desktop table */}
       <div className="hidden md:block bg-surface rounded-xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -122,20 +79,19 @@ export default async function AdminOrdersPage({ params }: { params: Promise<{ la
                 <th className="text-left text-text-muted font-medium px-5 py-3">Customer</th>
                 <th className="text-left text-text-muted font-medium px-5 py-3">Payment</th>
                 <th className="text-center text-text-muted font-medium px-5 py-3">Items</th>
-                <th className="text-center text-text-muted font-medium px-5 py-3">Status</th>
                 <th className="text-right text-text-muted font-medium px-5 py-3">Total</th>
                 <th className="text-right text-text-muted font-medium px-5 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {allOrders.length === 0 ? (
+              {orderList.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center text-text-muted">
-                    No orders yet
+                  <td colSpan={6} className="px-5 py-6 text-center text-text-muted">
+                    {emptyMsg}
                   </td>
                 </tr>
               ) : (
-                allOrders.map((order) => (
+                orderList.map((order) => (
                   <tr key={order.id} className="border-b border-border last:border-0 hover:bg-surface-hover/50 transition-colors">
                     <td className="px-5 py-3">
                       <p className="text-accent font-medium">{order.orderNumber}</p>
@@ -154,11 +110,6 @@ export default async function AdminOrdersPage({ params }: { params: Promise<{ la
                     <td className="px-5 py-3 text-center text-text-secondary">
                       {itemCountMap.get(order.id) || 0}
                     </td>
-                    <td className="px-5 py-3 text-center">
-                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full capitalize ${statusColor(order.orderStatus)}`}>
-                        {order.orderStatus}
-                      </span>
-                    </td>
                     <td className="px-5 py-3 text-right text-text-primary font-medium">{formatPrice(order.total)}</td>
                     <td className="px-5 py-3 text-right">
                       <Link
@@ -174,6 +125,46 @@ export default async function AdminOrdersPage({ params }: { params: Promise<{ la
             </tbody>
           </table>
         </div>
+      </div>
+    </>
+  );
+
+  return (
+    <div>
+      {/* Header with back link */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="font-[family-name:var(--font-cinzel)] text-2xl text-text-primary">Order History</h1>
+        <Link
+          href={`/${lang}/admin/orders`}
+          className="text-accent text-sm hover:underline flex items-center gap-1"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Active Orders
+        </Link>
+      </div>
+
+      {/* Completed Orders section */}
+      <div className="mb-10">
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="text-text-primary font-semibold text-lg">Completed Orders</h2>
+          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-success/10 text-success">
+            {completedOrders.length}
+          </span>
+        </div>
+        {renderOrders(completedOrders, "No completed orders yet", "bg-success/10 text-success")}
+      </div>
+
+      {/* Cancelled Orders section */}
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="text-text-primary font-semibold text-lg">Cancelled Orders</h2>
+          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-error/10 text-error">
+            {cancelledOrders.length}
+          </span>
+        </div>
+        {renderOrders(cancelledOrders, "No cancelled orders", "bg-error/10 text-error")}
       </div>
     </div>
   );

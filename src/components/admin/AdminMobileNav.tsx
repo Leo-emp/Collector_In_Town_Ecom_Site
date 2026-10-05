@@ -58,21 +58,36 @@ export function AdminMobileNav({ lang, navItems }: AdminMobileNavProps) {
               const href = `${basePath}${item.href}`;
               const active = pathname === href || (item.href && pathname.startsWith(href));
               return (
-                <Link
-                  key={item.key}
-                  href={href}
-                  onClick={() => setOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors
-                    ${active
-                      ? "text-accent bg-accent/10"
-                      : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
-                    }`}
-                >
-                  <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
-                  </svg>
-                  {item.label}
-                </Link>
+                <div key={item.key}>
+                  <Link
+                    href={href}
+                    onClick={() => setOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors
+                      ${active
+                        ? "text-accent bg-accent/10"
+                        : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"
+                      }`}
+                  >
+                    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
+                    </svg>
+                    {item.label}
+                  </Link>
+                  {/* Order History sub-link under Orders */}
+                  {item.key === "orders" && (
+                    <Link
+                      href={`${basePath}/orders/history`}
+                      onClick={() => setOpen(false)}
+                      className={`block ml-12 px-4 py-2 rounded-lg text-xs transition-colors
+                        ${pathname.includes("/orders/history")
+                          ? "text-accent"
+                          : "text-text-muted hover:text-text-primary hover:bg-surface-hover"
+                        }`}
+                    >
+                      Order History
+                    </Link>
+                  )}
+                </div>
               );
             })}
 

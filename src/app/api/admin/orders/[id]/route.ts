@@ -9,8 +9,8 @@ import { z } from "zod";
 
 // Validation schema for order updates — all fields optional
 const orderUpdateSchema = z.object({
-  // Order fulfillment status
-  order_status: z.enum(["pending", "confirmed", "shipped", "delivered", "cancelled"]).optional(),
+  // Order fulfillment status — pending → confirmed → done (or cancelled)
+  order_status: z.enum(["pending", "confirmed", "done", "cancelled"]).optional(),
   // Payment verification status
   payment_status: z.enum(["pending", "paid", "failed"]).optional(),
   // Shipping tracking number — set when order is shipped
