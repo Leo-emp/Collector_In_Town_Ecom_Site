@@ -3,7 +3,7 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 
 interface CatalogToolbarProps {
@@ -18,6 +18,7 @@ export function CatalogToolbar({ dict }: CatalogToolbarProps) {
   // Current values from URL
   const currentSort = searchParams.get("sort") || "newest";
   const currentSearch = searchParams.get("q") || "";
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Update URL search params without full page reload
   const updateParams = useCallback(
@@ -53,13 +54,41 @@ export function CatalogToolbar({ dict }: CatalogToolbarProps) {
           type="text"
           defaultValue={currentSearch}
           placeholder={dict.nav.search}
-          onChange={(e) => updateParams("q", e.target.value)}
+          onChange={(e) => {
+            const val = e.target.value;
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            debounceRef.current = setTimeout(() => updateParams("q", val), 300);
+          }}
           className="w-full pl-10 pr-4 py-2.5 bg-surface border border-border rounded-lg
                      text-text-primary text-sm placeholder:text-text-muted
                      focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent
                      transition-colors"
         />
       </div>
+
+      {/* Scale filter */}
+      <select
+        value={searchParams.get("scale") || ""}
+        onChange={(e) => updateParams("scale", e.target.value)}
+        className="px-4 py-2.5 bg-surface border border-border rounded-lg
+                   text-text-primary text-sm appearance-none cursor-pointer
+                   focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent
+                   transition-colors min-w-[120px]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23737373'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "right 12px center",
+          backgroundSize: "16px",
+        }}
+      >
+        <option value="">All Scales</option>
+        <option value="1:64">1:64</option>
+        <option value="1:43">1:43</option>
+        <option value="1:32">1:32</option>
+        <option value="1:24">1:24</option>
+        <option value="1:18">1:18</option>
+        <option value="1:12">1:12</option>
+      </select>
 
       {/* Sort dropdown */}
       <select

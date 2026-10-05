@@ -40,7 +40,7 @@ export default async function CatalogPage({
   searchParams,
 }: {
   params: Promise<{ lang: string; brand: string }>;
-  searchParams: Promise<{ sort?: string; q?: string; page?: string }>;
+  searchParams: Promise<{ sort?: string; q?: string; scale?: string; page?: string }>;
 }) {
   const { lang, brand } = await params;
   const search = await searchParams;
@@ -68,6 +68,10 @@ export default async function CatalogPage({
   // Apply search filter if provided
   if (search.q) {
     conditions.push(like(products.nameEn, `%${search.q}%`));
+  }
+  // Apply scale filter if provided
+  if (search.scale) {
+    conditions.push(eq(products.scale, search.scale));
   }
 
   const where = conditions.length > 1 ? and(...conditions) : conditions[0];
