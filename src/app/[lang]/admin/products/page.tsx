@@ -8,6 +8,7 @@ import { db } from "@/lib/drizzle";
 import { products } from "@/lib/schema";
 import { BRANDS } from "@/lib/constants";
 import { desc, eq, count } from "drizzle-orm";
+import { DeleteProductButton } from "@/components/admin/DeleteProductButton";
 
 // Force dynamic rendering — products page queries the database
 export const dynamic = "force-dynamic";
@@ -171,12 +172,15 @@ export default async function AdminProductsPage({
                       </span>
                     </td>
                     <td className="px-5 py-3 text-right">
-                      <Link
-                        href={`/${lang}/admin/products/${product.id}`}
-                        className="text-accent text-xs hover:underline"
-                      >
-                        Edit
-                      </Link>
+                      <div className="flex items-center justify-end gap-3">
+                        <Link
+                          href={`/${lang}/admin/products/${product.id}`}
+                          className="text-accent text-xs hover:underline"
+                        >
+                          Edit
+                        </Link>
+                        <DeleteProductButton productId={product.id} productName={product.nameEn} />
+                      </div>
                     </td>
                   </tr>
                 ))
