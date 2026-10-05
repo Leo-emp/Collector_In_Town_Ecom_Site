@@ -40,10 +40,10 @@ export default async function HomePage({
       <NewArrivalsStrip lang={lang} dict={dict} />
 
       {/* Brand-specific product sections */}
-      <BrandProductsSection lang={lang} brandSlug="mini-gt" brandName="Mini GT" />
-      <BrandProductsSection lang={lang} brandSlug="hot-wheels" brandName="Hot Wheels" />
-      <BrandProductsSection lang={lang} brandSlug="inno64" brandName="Inno64" />
-      <BrandProductsSection lang={lang} brandSlug="pop-race" brandName="Pop Race" />
+      <BrandProductsSection lang={lang} brandSlug="mini-gt" brandName="Mini GT" brandLogo="/images/brands/mini-gt.png" />
+      <BrandProductsSection lang={lang} brandSlug="hot-wheels" brandName="Hot Wheels" brandLogo="/images/brands/hot-wheels.png" />
+      <BrandProductsSection lang={lang} brandSlug="inno64" brandName="Inno64" brandLogo="/images/brands/inno64.svg" />
+      <BrandProductsSection lang={lang} brandSlug="pop-race" brandName="Pop Race" brandLogo="/images/brands/pop-race.png" />
 
       {/* Cinematic brand story section */}
       <BrandStory dict={dict} />

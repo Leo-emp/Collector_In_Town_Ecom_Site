@@ -13,6 +13,8 @@ interface BrandProductsSectionProps {
   brandSlug: string;
   // Display name — e.g. "Mini GT", "Hot Wheels"
   brandName: string;
+  // Path to the brand logo image
+  brandLogo: string;
 }
 
 // Placeholder card component — shown when no real products exist
@@ -36,7 +38,7 @@ function PlaceholderCard() {
   );
 }
 
-export async function BrandProductsSection({ lang, brandSlug, brandName }: BrandProductsSectionProps) {
+export async function BrandProductsSection({ lang, brandSlug, brandName, brandLogo }: BrandProductsSectionProps) {
   // Fetch products for this brand
   let displayProducts: {
     id: string;
@@ -90,11 +92,22 @@ export async function BrandProductsSection({ lang, brandSlug, brandName }: Brand
   return (
     <section className="py-10 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Section header — brand name + "View All" link */}
+        {/* Section header — brand logo + name + "View All" link */}
         <div className="flex items-center justify-between mb-6">
-          <h3 className="font-[family-name:var(--font-cinzel)] text-2xl md:text-3xl text-text-primary">
-            {brandName}
-          </h3>
+          <div className="flex items-center gap-3">
+            <img
+              src={brandLogo}
+              alt={brandName}
+              className={`object-contain
+                ${brandSlug === "hot-wheels" ? "h-10 sm:h-12" : ""}
+                ${brandSlug === "pop-race" ? "h-6 sm:h-8" : ""}
+                ${brandSlug !== "hot-wheels" && brandSlug !== "pop-race" ? "h-8 sm:h-10" : ""}
+              `}
+            />
+            <h3 className="font-[family-name:var(--font-cinzel)] text-2xl md:text-3xl text-text-primary">
+              {brandName}
+            </h3>
+          </div>
           <Link
             href={`/${lang}/products/${brandSlug}`}
             className="text-accent hover:text-accent-hover transition-colors text-sm font-medium
