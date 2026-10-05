@@ -350,11 +350,11 @@ export default function AdminProductEditPage({
             <div>
               <label className="text-text-secondary text-sm block mb-1.5">Weight (grams)</label>
               <input
-                type="number"
-                value={form.weight}
-                onChange={(e) => setForm({ ...form, weight: parseInt(e.target.value) || 0 })}
+                type="text"
+                inputMode="numeric"
+                value={form.weight || ""}
+                onChange={(e) => setForm({ ...form, weight: parseInt(e.target.value.replace(/\D/g, "")) || 0 })}
                 className={inputClass}
-                min={0}
                 placeholder="e.g. 150"
               />
             </div>
@@ -364,11 +364,12 @@ export default function AdminProductEditPage({
             <div>
               <label className="text-text-secondary text-sm block mb-1.5">Price (MMK)</label>
               <input
-                type="number"
-                value={form.price}
-                onChange={(e) => setForm({ ...form, price: parseInt(e.target.value) || 0 })}
+                type="text"
+                inputMode="numeric"
+                value={form.price || ""}
+                onChange={(e) => setForm({ ...form, price: parseInt(e.target.value.replace(/\D/g, "")) || 0 })}
                 className={inputClass}
-                min={0}
+                placeholder="e.g. 45000"
                 required
               />
             </div>
