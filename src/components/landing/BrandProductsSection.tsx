@@ -99,9 +99,10 @@ export async function BrandProductsSection({ lang, brandSlug, brandName, brandLo
               src={brandLogo}
               alt={brandName}
               className={`object-contain
-                ${brandSlug === "hot-wheels" ? "h-10 sm:h-12" : ""}
+                ${brandSlug === "hot-wheels" ? "h-10 sm:h-14" : ""}
+                ${brandSlug === "mini-gt" ? "h-8 sm:h-10" : ""}
+                ${brandSlug === "inno64" ? "h-8 sm:h-10 w-auto" : ""}
                 ${brandSlug === "pop-race" ? "h-6 sm:h-8" : ""}
-                ${brandSlug !== "hot-wheels" && brandSlug !== "pop-race" ? "h-8 sm:h-10" : ""}
               `}
             />
             <h3 className="font-[family-name:var(--font-cinzel)] text-2xl md:text-3xl text-text-primary">
