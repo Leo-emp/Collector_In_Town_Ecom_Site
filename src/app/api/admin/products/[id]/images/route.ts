@@ -1,7 +1,7 @@
 // POST /api/admin/products/[id]/images — upload product image to Vercel Blob
 // Validates file type, size, and max count before uploading
 import { NextResponse } from "next/server";
-import { put } from "@vercel/blob";
+import { put, del } from "@vercel/blob";
 import { db } from "@/lib/drizzle";
 import { productImages } from "@/lib/schema";
 import { verifyAdminSession } from "@/lib/admin-auth";
@@ -75,9 +75,24 @@ export async function POST(
     id: imageId,
     productId,
     url: blob.url,
-    // New images go at the end of the display order
     displayOrder: imageCount,
   });
+
+  // Re-check count after insert to handle parallel upload race condition
+  const [{ finalCount }] = await db
+    .select({ finalCount: count() })
+    .from(productImages)
+    .where(eq(productImages.productId, productId));
+
+  if (finalCount > MAX_PHOTOS_PER_PRODUCT) {
+    // Over limit — rollback: delete the DB record and the blob
+    await db.delete(productImages).where(eq(productImages.id, imageId));
+    await del(blob.url).catch(() => {});
+    return NextResponse.json(
+      { error: `Max ${MAX_PHOTOS_PER_PRODUCT} images per product` },
+      { status: 400 }
+    );
+  }
 
   // Return the created image record
   const [image] = await db
