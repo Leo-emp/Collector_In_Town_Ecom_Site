@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/drizzle";
 import { orders } from "@/lib/schema";
 import { verifyAdminSession } from "@/lib/admin-auth";
+import { sendTrackingNumberEmail } from "@/lib/email";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -50,14 +51,29 @@ export async function PUT(
   if (parsed.data.tracking_number !== undefined) updates.trackingNumber = parsed.data.tracking_number;
   if (parsed.data.admin_notes !== undefined) updates.adminNotes = parsed.data.admin_notes;
 
+  // Fetch current order before update (to check if tracking number is new)
+  const [current] = await db.select().from(orders).where(eq(orders.id, id));
+  if (!current) {
+    return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  }
+
   // Apply the update
   await db.update(orders).set(updates).where(eq(orders.id, id));
 
+  // Send tracking number email if a new tracking number was added
+  const newTracking = parsed.data.tracking_number;
+  if (newTracking && newTracking !== current.trackingNumber) {
+    sendTrackingNumberEmail(
+      current.customerEmail,
+      current.customerName,
+      current.orderNumber,
+      newTracking,
+      current.guestTrackingToken,
+    ).catch(() => {});
+  }
+
   // Fetch and return the updated order
   const [updated] = await db.select().from(orders).where(eq(orders.id, id));
-  if (!updated) {
-    return NextResponse.json({ error: "Order not found" }, { status: 404 });
-  }
 
   return NextResponse.json({ order: updated });
 }
