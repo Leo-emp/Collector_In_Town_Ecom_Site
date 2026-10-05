@@ -77,6 +77,12 @@ export const products = sqliteTable("products", {
   price: integer("price").notNull(),
   // Weight in grams — used for delivery fee calculation
   weight: integer("weight").notNull().default(0),
+  // Extra product details — shown in "Details" box on product page
+  details: text("details"),
+  // Terms and conditions text — shown in collapsible box on product page
+  terms: text("terms"),
+  // Whether to show the terms box on the product page (1 = show, 0 = hide)
+  showTerms: integer("show_terms").notNull().default(1),
   // How many units are in stock
   stockCount: integer("stock_count").notNull().default(0),
   // active | draft | sold_out | discontinued

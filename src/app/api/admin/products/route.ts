@@ -69,6 +69,9 @@ export async function POST(request: Request) {
     scale: parsed.data.scale,
     price: parsed.data.price,
     weight: parsed.data.weight || 0,
+    details: parsed.data.details || null,
+    terms: parsed.data.terms || null,
+    showTerms: parsed.data.show_terms === false ? 0 : 1,
     stockCount: parsed.data.stock_count,
     status: parsed.data.status,
   });

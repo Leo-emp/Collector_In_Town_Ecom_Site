@@ -168,6 +168,28 @@ export default async function ProductPage({
             </div>
           </div>
 
+          {/* Details box — extra product info from admin */}
+          {product.details && (
+            <div className="border-t border-border pt-4 mb-6">
+              <h2 className="text-text-primary font-semibold text-sm mb-2">Details</h2>
+              <p className="text-text-secondary text-sm leading-relaxed whitespace-pre-line">
+                {product.details}
+              </p>
+            </div>
+          )}
+
+          {/* Terms & Conditions box — collapsible, controlled by admin toggle */}
+          {product.showTerms === 1 && product.terms && (
+            <div className="border-t border-border pt-4 mb-6">
+              <h2 className="text-text-primary font-semibold text-sm mb-2">Terms & Conditions</h2>
+              <div className="bg-surface rounded-lg border border-border p-3">
+                <p className="text-text-secondary text-sm leading-relaxed whitespace-pre-line">
+                  {product.terms}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Add to cart */}
           <div className="mb-8">
             <AddToCartButton

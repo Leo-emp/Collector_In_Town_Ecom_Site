@@ -35,6 +35,8 @@ interface PendingFile {
 }
 
 // Empty form for creating a new product
+const DEFAULT_TERMS = "New sealed packing, after opened (No refund, No return)";
+
 const EMPTY_FORM = {
   name_en: "",
   name_my: "",
@@ -44,6 +46,9 @@ const EMPTY_FORM = {
   scale: "1:64",
   price: 0,
   weight: 0,
+  details: "",
+  terms: DEFAULT_TERMS,
+  show_terms: true,
   stock_count: 0,
   status: "active",
 };
@@ -109,6 +114,9 @@ export default function AdminProductEditPage({
         scale: product.scale || "1:64",
         price: product.price || 0,
         weight: product.weight || 0,
+        details: product.details || "",
+        terms: product.terms || DEFAULT_TERMS,
+        show_terms: product.showTerms !== 0,
         stock_count: product.stockCount || 0,
         status: product.status || "active",
       });
@@ -398,6 +406,47 @@ export default function AdminProductEditPage({
               <option value="sold_out">Sold Out</option>
               <option value="discontinued">Discontinued</option>
             </select>
+          </div>
+
+          {/* Details — extra product info shown on product page */}
+          <div>
+            <label className="text-text-secondary text-sm block mb-1.5">Details</label>
+            <textarea
+              value={form.details}
+              onChange={(e) => setForm({ ...form, details: e.target.value })}
+              className={`${inputClass} min-h-[100px] resize-y`}
+              placeholder="e.g. Diecast body, rubber tyres, opening doors..."
+              rows={4}
+            />
+          </div>
+
+          {/* Terms & Conditions — prewritten text, admin can edit per product */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-text-secondary text-sm">Terms & Conditions</label>
+              {/* Toggle button — show/hide terms on product page */}
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, show_terms: !form.show_terms })}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                  ${form.show_terms ? "bg-accent" : "bg-border"}`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 rounded-full bg-white transition-transform
+                    ${form.show_terms ? "translate-x-6" : "translate-x-1"}`}
+                />
+              </button>
+            </div>
+            <textarea
+              value={form.terms}
+              onChange={(e) => setForm({ ...form, terms: e.target.value })}
+              className={`${inputClass} min-h-[80px] resize-y ${!form.show_terms ? "opacity-50" : ""}`}
+              placeholder="Terms and conditions text..."
+              rows={3}
+            />
+            <p className="text-text-muted text-xs mt-1">
+              {form.show_terms ? "Visible on product page" : "Hidden on product page"}
+            </p>
           </div>
         </div>
 

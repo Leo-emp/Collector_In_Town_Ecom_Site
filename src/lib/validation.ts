@@ -50,6 +50,9 @@ export const productSchema = z.object({
   scale: z.string().min(1),
   price: z.number().int().min(0),
   weight: z.number().int().min(0).optional(),
+  details: z.string().max(5000).optional(),
+  terms: z.string().max(2000).optional(),
+  show_terms: z.boolean().optional(),
   stock_count: z.number().int().min(0),
   status: z.enum(["active", "draft", "sold_out", "discontinued"]),
 });
