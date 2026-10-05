@@ -42,7 +42,7 @@ export default async function HomePage({
       {/* Brand-specific product sections */}
       <BrandProductsSection lang={lang} brandSlug="mini-gt" brandName="Mini GT" brandLogo="/images/brands/mini-gt.png" />
       <BrandProductsSection lang={lang} brandSlug="hot-wheels" brandName="Hot Wheels" brandLogo="/images/brands/hot-wheels.png" />
-      <BrandProductsSection lang={lang} brandSlug="inno64" brandName="Inno64" brandLogo="/images/brands/inno64.svg" />
+      <BrandProductsSection lang={lang} brandSlug="inno64" brandName="Inno64" brandLogo="/images/brands/inno64-dark.svg" />
       <BrandProductsSection lang={lang} brandSlug="pop-race" brandName="Pop Race" brandLogo="/images/brands/pop-race.png" />
 
       {/* Cinematic brand story section */}
