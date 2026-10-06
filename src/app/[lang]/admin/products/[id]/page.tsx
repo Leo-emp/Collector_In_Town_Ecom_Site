@@ -391,12 +391,12 @@ export default function AdminProductEditPage({
             <div>
               <label className="text-text-secondary text-sm block mb-1.5">Stock Count</label>
               <input
-                type="number"
-                value={form.stock_count}
-                onChange={(e) => setForm({ ...form, stock_count: parseInt(e.target.value) || 0 })}
+                type="text"
+                inputMode="numeric"
+                value={form.stock_count || ""}
+                onChange={(e) => setForm({ ...form, stock_count: parseInt(e.target.value.replace(/\D/g, "")) || 0 })}
+                placeholder="e.g. 10"
                 className={inputClass}
-                min={0}
-                required
               />
             </div>
           </div>
