@@ -153,6 +153,136 @@ export async function sendTrackingNumberEmail(
   }
 }
 
+// ─── Customer order confirmed email ────────────────────
+// Sent when admin confirms the order (status → confirmed)
+export async function sendOrderConfirmedEmail(
+  customerEmail: string,
+  customerName: string,
+  orderNumber: string,
+  trackingToken: string | null,
+) {
+  if (!resend) return;
+
+  const trackUrl = trackingToken
+    ? `${SITE_URL}/en/track?token=${encodeURIComponent(trackingToken)}`
+    : null;
+
+  try {
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: customerEmail,
+      subject: `Order ${esc(orderNumber)} Confirmed`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; color: #333;">
+          <h2 style="color: #7a5c1f;">Your order has been confirmed</h2>
+          <p>Hi ${esc(customerName)}, great news! Your order <strong>${esc(orderNumber)}</strong> has been confirmed and is being prepared for delivery.</p>
+
+          <div style="background: #f0fdf4; border-radius: 8px; padding: 16px; margin: 20px 0; border-left: 4px solid #16a34a;">
+            <p style="margin: 0; color: #16a34a; font-weight: 600;">Order Confirmed</p>
+            <p style="margin: 4px 0 0; color: #666;">We'll notify you again once your order has been shipped.</p>
+          </div>
+
+          ${trackUrl ? `
+          <div style="text-align: center; margin: 24px 0;">
+            <a href="${trackUrl}" style="display: inline-block; background: #7a5c1f; color: #fff; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+              Track Your Order
+            </a>
+          </div>
+          ` : ""}
+
+          <p style="color: #999; font-size: 12px; text-align: center;">
+            Collector In Town — Myanmar's premier diecast model car store
+          </p>
+        </div>
+      `,
+    });
+  } catch {
+    // Don't fail the order update if email fails
+  }
+}
+
+// ─── Customer order delivered email ────────────────────
+// Sent when admin marks order as done (status → done)
+export async function sendOrderDeliveredEmail(
+  customerEmail: string,
+  customerName: string,
+  orderNumber: string,
+) {
+  if (!resend) return;
+
+  try {
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: customerEmail,
+      subject: `Order ${esc(orderNumber)} Delivered`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; color: #333;">
+          <h2 style="color: #7a5c1f;">Your order has been delivered</h2>
+          <p>Hi ${esc(customerName)}, your order <strong>${esc(orderNumber)}</strong> has been delivered successfully.</p>
+
+          <div style="background: #f0fdf4; border-radius: 8px; padding: 16px; margin: 20px 0; border-left: 4px solid #16a34a;">
+            <p style="margin: 0; color: #16a34a; font-weight: 600;">Delivered</p>
+            <p style="margin: 4px 0 0; color: #666;">Thank you for shopping with us! We hope you enjoy your new diecast models.</p>
+          </div>
+
+          <div style="text-align: center; margin: 24px 0;">
+            <a href="${SITE_URL}/en/products/new-arrivals" style="display: inline-block; background: #7a5c1f; color: #fff; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+              Browse More Models
+            </a>
+          </div>
+
+          <p style="color: #999; font-size: 12px; text-align: center;">
+            Collector In Town — Myanmar's premier diecast model car store
+          </p>
+        </div>
+      `,
+    });
+  } catch {
+    // Don't fail the order update if email fails
+  }
+}
+
+// ─── Customer order cancelled email ────────────────────
+// Sent when admin cancels the order (status → cancelled)
+export async function sendOrderCancelledEmail(
+  customerEmail: string,
+  customerName: string,
+  orderNumber: string,
+) {
+  if (!resend) return;
+
+  try {
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: customerEmail,
+      subject: `Order ${esc(orderNumber)} Cancelled`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; color: #333;">
+          <h2 style="color: #7a5c1f;">Your order has been cancelled</h2>
+          <p>Hi ${esc(customerName)}, your order <strong>${esc(orderNumber)}</strong> has been cancelled.</p>
+
+          <div style="background: #fef2f2; border-radius: 8px; padding: 16px; margin: 20px 0; border-left: 4px solid #dc2626;">
+            <p style="margin: 0; color: #dc2626; font-weight: 600;">Order Cancelled</p>
+            <p style="margin: 4px 0 0; color: #666;">If you paid by card, your refund will be processed within 5-10 business days. If you have any questions, please contact us.</p>
+          </div>
+
+          <div style="text-align: center; margin: 24px 0;">
+            <a href="${SITE_URL}/en" style="display: inline-block; background: #7a5c1f; color: #fff; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+              Visit Our Store
+            </a>
+          </div>
+
+          <p style="color: #999; font-size: 12px; text-align: center;">
+            Collector In Town — Myanmar's premier diecast model car store
+          </p>
+        </div>
+      `,
+    });
+  } catch {
+    // Don't fail the order update if email fails
+  }
+}
+
 // ─── Admin order notification ───────────────────────────
 export async function sendAdminOrderNotification(order: OrderNotification) {
   if (!resend || !ADMIN_EMAIL) return;

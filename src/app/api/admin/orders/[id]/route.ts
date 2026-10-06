@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/drizzle";
 import { orders } from "@/lib/schema";
 import { verifyAdminSession } from "@/lib/admin-auth";
-import { sendTrackingNumberEmail } from "@/lib/email";
+import { sendTrackingNumberEmail, sendOrderConfirmedEmail, sendOrderDeliveredEmail, sendOrderCancelledEmail } from "@/lib/email";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -70,6 +70,31 @@ export async function PUT(
       newTracking,
       current.guestTrackingToken,
     ).catch(() => {});
+  }
+
+  // Send status change emails to customer
+  const newStatus = parsed.data.order_status;
+  if (newStatus && newStatus !== current.orderStatus) {
+    if (newStatus === "confirmed") {
+      sendOrderConfirmedEmail(
+        current.customerEmail,
+        current.customerName,
+        current.orderNumber,
+        current.guestTrackingToken,
+      ).catch(() => {});
+    } else if (newStatus === "done") {
+      sendOrderDeliveredEmail(
+        current.customerEmail,
+        current.customerName,
+        current.orderNumber,
+      ).catch(() => {});
+    } else if (newStatus === "cancelled") {
+      sendOrderCancelledEmail(
+        current.customerEmail,
+        current.customerName,
+        current.orderNumber,
+      ).catch(() => {});
+    }
   }
 
   // Fetch and return the updated order
