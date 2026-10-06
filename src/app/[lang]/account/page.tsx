@@ -1,11 +1,13 @@
 // Account page — shows profile when signed in, sign-in prompt when not
 // Has its own header (public navbar is hidden on this page)
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { getDictionary, hasLocale } from "../dictionaries";
 import { auth } from "@/lib/auth";
 import { SignOutButton } from "./sign-out-button";
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "";
 
 export const metadata = {
   title: "My Account — Collector In Town",
@@ -22,6 +24,11 @@ export default async function AccountPage({
   const dict = await getDictionary(lang);
   const requestHeaders = await headers();
   const session = await auth.api.getSession({ headers: requestHeaders });
+
+  // Admin user — always go to admin dashboard
+  if (session?.user?.email && ADMIN_EMAIL && session.user.email === ADMIN_EMAIL) {
+    redirect(`/${lang}/admin`);
+  }
 
   // Not signed in — redirect-style prompt with its own minimal header
   if (!session) {
