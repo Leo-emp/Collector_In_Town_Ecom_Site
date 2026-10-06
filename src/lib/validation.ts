@@ -71,6 +71,8 @@ export const promoSchema = z.object({
 export const deliveryZoneSchema = z.object({
   name_en: z.string().min(1).max(100).optional(),
   name_my: z.string().max(100).optional(),
+  city: z.string().max(100).optional(),
+  township: z.string().max(100).optional(),
   fee: z.number().int().min(0).optional(),
   fee_per_kg: z.number().int().min(0).optional(),
   eta: z.string().max(50).optional(),

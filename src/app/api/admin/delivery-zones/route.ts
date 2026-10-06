@@ -23,16 +23,18 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { nameEn, fee, feePerKg, estimatedTime } = body;
+  const { nameEn, city, township, fee, feePerKg, estimatedTime } = body;
 
   if (!nameEn || typeof fee !== "number") {
-    return NextResponse.json({ error: "Name and fee are required" }, { status: 400 });
+    return NextResponse.json({ error: "State name and fee are required" }, { status: 400 });
   }
 
   const id = randomUUID();
   await db.insert(deliveryZones).values({
     id,
     nameEn,
+    city: city || "",
+    township: township || "",
     fee,
     feePerKg: feePerKg || 0,
     estimatedTime: estimatedTime || null,

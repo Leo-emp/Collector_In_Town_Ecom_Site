@@ -1,19 +1,22 @@
 // CheckoutForm — multi-step checkout wired to real APIs
 // Fetches delivery zones and product data from API, submits orders to POST /api/orders
+// Customers can only checkout from locations that match an active delivery zone
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/format";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 
-// Shape of delivery zone from the API
+// Shape of delivery zone from the API — includes state/city/township
 interface DeliveryZone {
   id: string;
   nameEn: string;
   nameMy: string | null;
+  city: string;
+  township: string;
   fee: number;
   feePerKg: number;
   estimatedTime: string | null;
@@ -58,7 +61,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
   // Form state
   const [contact, setContact] = useState({ name: "", email: "", phone: "" });
   const [delivery, setDelivery] = useState({
-    address: "", township: "", city: "", zone: "", notes: "",
+    address: "", state: "", city: "", township: "", zone: "", notes: "",
   });
   const [promoCode, setPromoCode] = useState("");
   // "card" = Stripe Checkout (Visa/Mastercard), "cod" = Cash on Delivery
@@ -94,6 +97,56 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
     fetchData();
   }, [items]);
 
+  // Build cascading dropdown options from delivery zones
+  // Unique states from all active zones
+  const stateOptions = useMemo(() => {
+    const states = [...new Set(zones.map((z) => z.nameEn))];
+    return states.sort();
+  }, [zones]);
+
+  // Cities available for the selected state
+  const cityOptions = useMemo(() => {
+    if (!delivery.state) return [];
+    const cities = [...new Set(
+      zones
+        .filter((z) => z.nameEn === delivery.state && z.city)
+        .map((z) => z.city)
+    )];
+    return cities.sort();
+  }, [zones, delivery.state]);
+
+  // Townships available for the selected state + city
+  const townshipOptions = useMemo(() => {
+    if (!delivery.state) return [];
+    const townships = [...new Set(
+      zones
+        .filter((z) =>
+          z.nameEn === delivery.state &&
+          (delivery.city ? z.city === delivery.city : true) &&
+          z.township
+        )
+        .map((z) => z.township)
+    )];
+    return townships.sort();
+  }, [zones, delivery.state, delivery.city]);
+
+  // Find the matching zone for the selected state/city/township
+  const matchedZone = useMemo(() => {
+    return zones.find((z) =>
+      z.nameEn === delivery.state &&
+      z.city === (delivery.city || "") &&
+      z.township === (delivery.township || "")
+    ) || zones.find((z) =>
+      z.nameEn === delivery.state &&
+      z.city === (delivery.city || "") &&
+      z.township === ""
+    ) || zones.find((z) =>
+      z.nameEn === delivery.state &&
+      z.city === "" &&
+      z.township === ""
+    );
+  }, [zones, delivery.state, delivery.city, delivery.township]);
+
   // Resolve cart items to product data
   const cartProducts = items
     .map((item) => {
@@ -113,10 +166,9 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
   const totalWeightGrams = cartProducts.reduce(
     (sum, { product, quantity }) => sum + (product.weight || 0) * quantity, 0
   );
-  const zone = zones.find((z) => z.id === delivery.zone);
   // Delivery fee = base fee + (weight in kg rounded up) × per-kg rate
   const weightKg = Math.ceil(totalWeightGrams / 1000);
-  const deliveryFee = zone ? zone.fee + weightKg * (zone.feePerKg || 0) : 0;
+  const deliveryFee = matchedZone ? matchedZone.fee + weightKg * (matchedZone.feePerKg || 0) : 0;
   const total = subtotal + deliveryFee;
 
   const currentStepIndex = STEPS.indexOf(currentStep);
@@ -127,8 +179,8 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
       case "contact":
         return contact.name.trim() && contact.email.trim() && contact.phone.trim();
       case "delivery":
-        return delivery.address.trim() && delivery.township.trim() &&
-               delivery.city.trim() && delivery.zone;
+        // Must have address, selected state, and a matching delivery zone
+        return delivery.address.trim() && delivery.state && matchedZone;
       case "payment":
         return true;
       default:
@@ -164,9 +216,9 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
           },
           delivery: {
             address: delivery.address,
-            township: delivery.township,
-            city: delivery.city,
-            zone: delivery.zone,
+            township: delivery.township || "",
+            city: delivery.city || "",
+            zone: matchedZone?.id || "",
             notes: delivery.notes || undefined,
           },
           items: items.map((i) => ({
@@ -351,27 +403,82 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
           </div>
         )}
 
-        {/* Step 2: Delivery Address */}
+        {/* Step 2: Delivery Address — cascading dropdowns from delivery zones */}
         {currentStep === "delivery" && (
           <div className="space-y-4">
             <h2 className="text-text-primary font-semibold text-lg mb-4">{dict.checkout.delivery}</h2>
+
+            {/* State dropdown — populated from delivery zones */}
             <div>
-              <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.deliveryZone}</label>
+              <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.state || "State / Region"}</label>
               <select
-                value={delivery.zone}
-                onChange={(e) => setDelivery({ ...delivery, zone: e.target.value })}
+                value={delivery.state}
+                onChange={(e) => setDelivery({ ...delivery, state: e.target.value, city: "", township: "", zone: "" })}
                 className={inputClass}
               >
-                <option value="">-- {dict.checkout.deliveryZone} --</option>
-                {zones.map((z) => (
-                  <option key={z.id} value={z.id}>
-                    {z.nameEn} — {formatPrice(z.fee)}
-                    {z.feePerKg > 0 ? ` + ${formatPrice(z.feePerKg)}/kg` : ""}
-                    {z.estimatedTime ? ` (${z.estimatedTime})` : ""}
-                  </option>
+                <option value="">-- Select State / Region --</option>
+                {stateOptions.map((state) => (
+                  <option key={state} value={state}>{state}</option>
                 ))}
               </select>
             </div>
+
+            {/* City dropdown — shows only cities in the selected state */}
+            {delivery.state && cityOptions.length > 0 && (
+              <div>
+                <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.city}</label>
+                <select
+                  value={delivery.city}
+                  onChange={(e) => setDelivery({ ...delivery, city: e.target.value, township: "", zone: "" })}
+                  className={inputClass}
+                >
+                  <option value="">-- Select City --</option>
+                  {cityOptions.map((city) => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Township dropdown — shows only townships in selected state+city */}
+            {delivery.state && townshipOptions.length > 0 && (
+              <div>
+                <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.township}</label>
+                <select
+                  value={delivery.township}
+                  onChange={(e) => setDelivery({ ...delivery, township: e.target.value, zone: "" })}
+                  className={inputClass}
+                >
+                  <option value="">-- Select Township --</option>
+                  {townshipOptions.map((twp) => (
+                    <option key={twp} value={twp}>{twp}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Show matched zone info or warning */}
+            {delivery.state && matchedZone && (
+              <div className="bg-success/10 border border-success/20 rounded-lg px-4 py-3 text-sm">
+                <p className="text-success font-medium">Delivery available!</p>
+                <p className="text-text-secondary mt-1">
+                  Base fee: {formatPrice(matchedZone.fee)}
+                  {matchedZone.feePerKg > 0 ? ` + ${formatPrice(matchedZone.feePerKg)}/kg` : ""}
+                  {matchedZone.estimatedTime ? ` — ${matchedZone.estimatedTime}` : ""}
+                </p>
+              </div>
+            )}
+
+            {delivery.state && !matchedZone && (
+              <div className="bg-error/10 border border-error/20 rounded-lg px-4 py-3 text-sm">
+                <p className="text-error font-medium">Delivery not available</p>
+                <p className="text-text-secondary mt-1">
+                  We don&apos;t deliver to this location yet. Please select a different area or contact us.
+                </p>
+              </div>
+            )}
+
+            {/* Street address */}
             <div>
               <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.address}</label>
               <input
@@ -382,28 +489,8 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
                 placeholder="123 Bogyoke Road"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.township}</label>
-                <input
-                  type="text"
-                  value={delivery.township}
-                  onChange={(e) => setDelivery({ ...delivery, township: e.target.value })}
-                  className={inputClass}
-                  placeholder="Latha"
-                />
-              </div>
-              <div>
-                <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.city}</label>
-                <input
-                  type="text"
-                  value={delivery.city}
-                  onChange={(e) => setDelivery({ ...delivery, city: e.target.value })}
-                  className={inputClass}
-                  placeholder="Yangon"
-                />
-              </div>
-            </div>
+
+            {/* Delivery notes */}
             <div>
               <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.notes}</label>
               <textarea
@@ -516,8 +603,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
               </div>
               <p className="text-text-secondary text-sm">{delivery.address}</p>
               <p className="text-text-secondary text-sm">
-                {delivery.township}, {delivery.city}
-                {zone && ` — ${zone.nameEn}`}
+                {[delivery.township, delivery.city, delivery.state].filter(Boolean).join(", ")}
               </p>
               {delivery.notes && (
                 <p className="text-text-muted text-xs mt-1">{delivery.notes}</p>
@@ -615,7 +701,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
             <div className="flex justify-between text-sm">
               <span className="text-text-secondary">{dict.cart.deliveryFee}</span>
               <span className="text-text-primary">
-                {zone ? formatPrice(deliveryFee) : "—"}
+                {matchedZone ? formatPrice(deliveryFee) : "—"}
               </span>
             </div>
             <div className="flex justify-between font-bold text-lg border-t border-border pt-3">

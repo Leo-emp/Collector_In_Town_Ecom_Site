@@ -1,19 +1,21 @@
-// CartSummary — order summary sidebar showing subtotal, delivery fee, and total
-// Includes delivery zone selector and promo code input
+// CartSummary — order summary sidebar showing subtotal, delivery estimate, and total
+// Fetches active delivery zones from API for location-based fee preview
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { formatPrice } from "@/lib/format";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 
-// Delivery zone data — will come from Supabase when connected
-const DELIVERY_ZONES = [
-  { id: "yangon", name_en: "Yangon", name_my: "ရန်ကုန်", fee: 2000 },
-  { id: "mandalay", name_en: "Mandalay", name_my: "မန္တလေး", fee: 3500 },
-  { id: "naypyidaw", name_en: "Naypyidaw", name_my: "နေပြည်တော်", fee: 3000 },
-  { id: "other", name_en: "Other Regions", name_my: "အခြားဒေသများ", fee: 5000 },
-];
+// Delivery zone shape from API
+interface DeliveryZone {
+  id: string;
+  nameEn: string;
+  city: string;
+  township: string;
+  fee: number;
+  feePerKg: number;
+}
 
 interface CartSummaryProps {
   subtotal: number;
@@ -22,16 +24,36 @@ interface CartSummaryProps {
 }
 
 export function CartSummary({ subtotal, lang, dict }: CartSummaryProps) {
-  const [selectedZone, setSelectedZone] = useState("");
+  const [zones, setZones] = useState<DeliveryZone[]>([]);
+  const [selectedState, setSelectedState] = useState("");
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
 
-  // Calculate delivery fee — always charged based on zone
-  const zone = DELIVERY_ZONES.find((z) => z.id === selectedZone);
-  const deliveryFee = zone?.fee || 0;
+  // Fetch delivery zones on mount
+  useEffect(() => {
+    fetch("/api/delivery-zones")
+      .then((res) => res.json())
+      .then((data) => setZones(data.zones || []))
+      .catch(() => {});
+  }, []);
+
+  // Unique states for the dropdown
+  const stateOptions = useMemo(() => {
+    return [...new Set(zones.map((z) => z.nameEn))].sort();
+  }, [zones]);
+
+  // Find cheapest zone in selected state for fee preview
+  const previewZone = useMemo(() => {
+    if (!selectedState) return null;
+    const stateZones = zones.filter((z) => z.nameEn === selectedState);
+    if (stateZones.length === 0) return null;
+    return stateZones.reduce((min, z) => z.fee < min.fee ? z : min, stateZones[0]);
+  }, [zones, selectedState]);
+
+  const deliveryFee = previewZone?.fee || 0;
   const total = subtotal + deliveryFee;
 
-  // Handle promo code (placeholder — will validate via API)
+  // Handle promo code (placeholder — validated at checkout)
   const handleApplyPromo = () => {
     if (promoCode.trim()) setPromoApplied(true);
   };
@@ -42,24 +64,27 @@ export function CartSummary({ subtotal, lang, dict }: CartSummaryProps) {
         {dict.cart.title}
       </h2>
 
-      {/* Delivery zone selector */}
+      {/* State selector for delivery fee preview */}
       <div className="mb-4">
         <label className="text-text-secondary text-sm block mb-2">
           {dict.checkout.deliveryZone}
         </label>
         <select
-          value={selectedZone}
-          onChange={(e) => setSelectedZone(e.target.value)}
+          value={selectedState}
+          onChange={(e) => setSelectedState(e.target.value)}
           className="w-full bg-background border border-border rounded-lg px-3 py-2.5
                      text-text-primary text-sm focus:outline-none focus:border-accent"
         >
-          <option value="">-- {dict.checkout.deliveryZone} --</option>
-          {DELIVERY_ZONES.map((z) => (
-            <option key={z.id} value={z.id}>
-              {z.name_en} — {formatPrice(z.fee)}
-            </option>
+          <option value="">-- Select State / Region --</option>
+          {stateOptions.map((state) => (
+            <option key={state} value={state}>{state}</option>
           ))}
         </select>
+        {selectedState && previewZone && (
+          <p className="text-text-muted text-xs mt-1">
+            Starting from {formatPrice(previewZone.fee)}
+          </p>
+        )}
       </div>
 
       {/* Promo code input */}
@@ -86,7 +111,7 @@ export function CartSummary({ subtotal, lang, dict }: CartSummaryProps) {
           </button>
         </div>
         {promoApplied && (
-          <p className="text-success text-xs mt-1">Promo code applied (validation coming soon)</p>
+          <p className="text-success text-xs mt-1">Promo code applied (validated at checkout)</p>
         )}
       </div>
 
@@ -100,7 +125,7 @@ export function CartSummary({ subtotal, lang, dict }: CartSummaryProps) {
         <div className="flex justify-between text-sm">
           <span className="text-text-secondary">{dict.cart.deliveryFee}</span>
           <span className="text-text-primary">
-            {zone ? formatPrice(deliveryFee) : "—"}
+            {previewZone ? formatPrice(deliveryFee) : "—"}
           </span>
         </div>
 

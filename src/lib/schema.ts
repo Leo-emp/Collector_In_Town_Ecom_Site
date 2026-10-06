@@ -119,10 +119,14 @@ export const productImages = sqliteTable("product_images", {
 // Shipping regions with fees — Yangon, Mandalay, etc.
 export const deliveryZones = sqliteTable("delivery_zones", {
   id: uuidPk(),
-  // English zone name — shown in checkout dropdown
+  // State/Region name — e.g. "Yangon Region", "Mandalay Region"
   nameEn: text("name_en").notNull(),
-  // Myanmar zone name — shown when locale is "my"
+  // Myanmar state name — shown when locale is "my"
   nameMy: text("name_my"),
+  // City within the state — e.g. "Yangon", "Mandalay"
+  city: text("city").notNull().default(""),
+  // Township within the city — e.g. "Latha", "Sanchaung"
+  township: text("township").notNull().default(""),
   // Base delivery fee in MMK — flat charge before weight calculation
   fee: integer("fee").notNull(),
   // Fee per kg in MMK — multiplied by total order weight

@@ -32,6 +32,8 @@ export async function PUT(
   const updates: Record<string, unknown> = {};
   if (parsed.data.name_en !== undefined) updates.nameEn = parsed.data.name_en;
   if (parsed.data.name_my !== undefined) updates.nameMy = parsed.data.name_my || null;
+  if (parsed.data.city !== undefined) updates.city = parsed.data.city;
+  if (parsed.data.township !== undefined) updates.township = parsed.data.township;
   if (parsed.data.fee !== undefined) updates.fee = parsed.data.fee;
   if (parsed.data.fee_per_kg !== undefined) updates.feePerKg = parsed.data.fee_per_kg;
   if (parsed.data.eta !== undefined) updates.estimatedTime = parsed.data.eta || null;

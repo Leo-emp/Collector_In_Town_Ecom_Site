@@ -1,4 +1,4 @@
-// Admin Delivery Zones page — manage zones and fees via API
+// Admin Delivery Zones page — manage zones (state/city/township) and fees
 // Client component — fetches zones and saves edits
 "use client";
 
@@ -10,6 +10,8 @@ interface DeliveryZone {
   id: string;
   nameEn: string;
   nameMy: string | null;
+  city: string;
+  township: string;
   fee: number;
   feePerKg: number;
   estimatedTime: string | null;
@@ -21,12 +23,18 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
   // All delivery zones from the API
   const [zones, setZones] = useState<DeliveryZone[]>([]);
   const [editing, setEditing] = useState<string | null>(null);
+  // Edit form state
+  const [editName, setEditName] = useState("");
+  const [editCity, setEditCity] = useState("");
+  const [editTownship, setEditTownship] = useState("");
   const [editFee, setEditFee] = useState<number>(0);
   const [editFeePerKg, setEditFeePerKg] = useState<number>(0);
   const [editEta, setEditEta] = useState("");
   // Add zone form
   const [showAdd, setShowAdd] = useState(false);
-  const [newName, setNewName] = useState("");
+  const [newState, setNewState] = useState("");
+  const [newCity, setNewCity] = useState("");
+  const [newTownship, setNewTownship] = useState("");
   const [newFee, setNewFee] = useState<number>(0);
   const [newFeePerKg, setNewFeePerKg] = useState<number>(0);
   const [newEta, setNewEta] = useState("");
@@ -56,6 +64,9 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
   // Start editing a zone — populate temp values
   const startEdit = (zone: DeliveryZone) => {
     setEditing(zone.id);
+    setEditName(zone.nameEn);
+    setEditCity(zone.city || "");
+    setEditTownship(zone.township || "");
     setEditFee(zone.fee);
     setEditFeePerKg(zone.feePerKg || 0);
     setEditEta(zone.estimatedTime || "");
@@ -70,6 +81,9 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          name_en: editName,
+          city: editCity,
+          township: editTownship,
           fee: editFee,
           fee_per_kg: editFeePerKg,
           eta: editEta,
@@ -87,7 +101,7 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
 
   // Create a new zone via POST
   const handleCreate = async () => {
-    if (!newName.trim()) return;
+    if (!newState.trim()) return;
     setSaving(true);
     setError("");
     try {
@@ -95,7 +109,9 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          nameEn: newName.trim(),
+          nameEn: newState.trim(),
+          city: newCity.trim(),
+          township: newTownship.trim(),
           fee: newFee,
           feePerKg: newFeePerKg,
           estimatedTime: newEta || null,
@@ -103,7 +119,9 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
       });
       if (!res.ok) throw new Error("Failed to create zone");
       setShowAdd(false);
-      setNewName("");
+      setNewState("");
+      setNewCity("");
+      setNewTownship("");
       setNewFee(0);
       setNewFeePerKg(0);
       setNewEta("");
@@ -117,8 +135,7 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
 
   // Delete a zone permanently via DELETE
   const handleDelete = async (zone: DeliveryZone) => {
-    // Confirm before deleting
-    if (!confirm(`Delete "${zone.nameEn}"? This cannot be undone.`)) return;
+    if (!confirm(`Delete "${zone.nameEn}${zone.city ? ` — ${zone.city}` : ""}${zone.township ? ` — ${zone.township}` : ""}"? This cannot be undone.`)) return;
     setError("");
     try {
       const res = await fetch(`/api/admin/delivery-zones/${zone.id}`, {
@@ -145,6 +162,9 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
     }
   };
 
+  // Shared input classes
+  const inputClass = "w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent";
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -165,33 +185,50 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
         </button>
       </div>
 
+      {/* Info banner — explains the state/city/township structure */}
+      <div className="bg-accent/5 border border-accent/20 rounded-lg px-4 py-3 mb-6 text-text-secondary text-sm">
+        Each delivery zone = <strong>State</strong> + <strong>City</strong> + <strong>Township</strong>. Customers can only checkout if their location matches an active zone.
+      </div>
+
       {/* Add zone form */}
       {showAdd && (
         <div className="bg-surface rounded-xl border border-border p-5 mb-6">
           <h3 className="text-text-primary font-semibold mb-4">New Delivery Zone</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+          {/* State, City, Township row */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
             <div>
-              <label className="text-text-muted text-xs block mb-1">Zone Name</label>
+              <label className="text-text-muted text-xs block mb-1">State / Region *</label>
               <input
                 type="text"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder="e.g. Sagaing"
-                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent"
+                value={newState}
+                onChange={(e) => setNewState(e.target.value)}
+                placeholder="e.g. Yangon Region"
+                className={inputClass}
               />
             </div>
             <div>
-              <label className="text-text-muted text-xs block mb-1">Estimated Delivery</label>
+              <label className="text-text-muted text-xs block mb-1">City</label>
               <input
                 type="text"
-                value={newEta}
-                onChange={(e) => setNewEta(e.target.value)}
-                placeholder="e.g. 2-3 days"
-                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent"
+                value={newCity}
+                onChange={(e) => setNewCity(e.target.value)}
+                placeholder="e.g. Yangon"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="text-text-muted text-xs block mb-1">Township</label>
+              <input
+                type="text"
+                value={newTownship}
+                onChange={(e) => setNewTownship(e.target.value)}
+                placeholder="e.g. Latha"
+                className={inputClass}
               />
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+          {/* Fees and ETA row */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
             <div>
               <label className="text-text-muted text-xs block mb-1">Base Fee (MMK)</label>
               <input
@@ -200,7 +237,7 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
                 value={newFee || ""}
                 onChange={(e) => setNewFee(parseInt(e.target.value.replace(/\D/g, "")) || 0)}
                 placeholder="e.g. 3000"
-                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent"
+                className={inputClass}
               />
             </div>
             <div>
@@ -211,13 +248,23 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
                 value={newFeePerKg || ""}
                 onChange={(e) => setNewFeePerKg(parseInt(e.target.value.replace(/\D/g, "")) || 0)}
                 placeholder="e.g. 500"
-                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="text-text-muted text-xs block mb-1">Estimated Delivery</label>
+              <input
+                type="text"
+                value={newEta}
+                onChange={(e) => setNewEta(e.target.value)}
+                placeholder="e.g. 2-3 days"
+                className={inputClass}
               />
             </div>
           </div>
           <button
             onClick={handleCreate}
-            disabled={saving || !newName.trim()}
+            disabled={saving || !newState.trim()}
             className="px-4 py-2 bg-accent text-background rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-50"
           >
             {saving ? "Creating..." : "Create Zone"}
@@ -236,8 +283,14 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
           <div key={zone.id} className="bg-surface rounded-xl border border-border p-5">
             <div className="flex items-start justify-between mb-3">
               <div>
+                {/* State name as main title */}
                 <h3 className="text-text-primary font-semibold">{zone.nameEn}</h3>
-                <p className="text-text-muted text-sm">{zone.nameMy || ""}</p>
+                {/* City and township as subtitle */}
+                {(zone.city || zone.township) && (
+                  <p className="text-text-muted text-sm">
+                    {[zone.city, zone.township].filter(Boolean).join(" — ")}
+                  </p>
+                )}
               </div>
               <button
                 onClick={() => toggleActive(zone)}
@@ -249,8 +302,39 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
             </div>
 
             {editing === zone.id ? (
-              // Edit mode — inline form
+              // Edit mode — inline form with all fields
               <div className="space-y-3">
+                {/* State, City, Township fields */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-text-muted text-xs block mb-1">State / Region</label>
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-text-muted text-xs block mb-1">City</label>
+                    <input
+                      type="text"
+                      value={editCity}
+                      onChange={(e) => setEditCity(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-text-muted text-xs block mb-1">Township</label>
+                    <input
+                      type="text"
+                      value={editTownship}
+                      onChange={(e) => setEditTownship(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+                {/* Fee fields */}
                 <div className="grid grid-cols-3 gap-3">
                   <div>
                     <label className="text-text-muted text-xs block mb-1">Base Fee (MMK)</label>
@@ -259,7 +343,7 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
                       inputMode="numeric"
                       value={editFee || ""}
                       onChange={(e) => setEditFee(parseInt(e.target.value.replace(/\D/g, "")) || 0)}
-                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent"
+                      className={inputClass}
                     />
                   </div>
                   <div>
@@ -269,7 +353,7 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
                       inputMode="numeric"
                       value={editFeePerKg || ""}
                       onChange={(e) => setEditFeePerKg(parseInt(e.target.value.replace(/\D/g, "")) || 0)}
-                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent"
+                      className={inputClass}
                     />
                   </div>
                   <div>
@@ -278,7 +362,7 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
                       type="text"
                       value={editEta}
                       onChange={(e) => setEditEta(e.target.value)}
-                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent"
+                      className={inputClass}
                     />
                   </div>
                 </div>
@@ -299,7 +383,7 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
                 </div>
               </div>
             ) : (
-              // View mode — display base fee, per-kg fee, and ETA
+              // View mode — display location, fees, and ETA
               <div>
                 <div className="flex justify-between text-sm mb-3">
                   <span className="text-text-muted">Base Fee</span>
