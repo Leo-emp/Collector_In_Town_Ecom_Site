@@ -45,6 +45,8 @@ export default async function HomePage({
       <BrandProductsSection lang={lang} brandSlug="pop-race" brandName="Pop Race" brandLogo="/images/brands/pop-race.png" />
       <BrandProductsSection lang={lang} brandSlug="tomica" brandName="Tomica" brandLogo="/images/brands/tomica.webp" />
       <BrandProductsSection lang={lang} brandSlug="trends-hobby" brandName="Trends Hobby" brandLogo="/images/brands/trends-hobby.webp" />
+      <BrandProductsSection lang={lang} brandSlug="tarmac" brandName="Tarmac Works" brandLogo="/images/brands/tarmac.jpg" />
+      <BrandProductsSection lang={lang} brandSlug="greenlight" brandName="Greenlight" brandLogo="/images/brands/greenlight.webp" />
 
       {/* Cinematic brand story section */}
       <BrandStory dict={dict} />

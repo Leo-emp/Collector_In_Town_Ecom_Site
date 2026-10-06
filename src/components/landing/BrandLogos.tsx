@@ -47,6 +47,7 @@ export function BrandLogos({ lang, dict }: BrandLogosProps) {
                              ${brand.blendMode === "invert" && isDark ? "invert" : ""}
                              ${brand.slug === "inno64" && !isDark ? "invert" : ""}
                              ${brand.slug === "trends-hobby" && !isDark ? "invert" : ""}
+                             ${brand.slug === "tarmac" && !isDark ? "invert" : ""}
                              ${brand.slug === "hot-wheels" ? "max-h-32 sm:max-h-40 scale-110" : ""}
                              ${brand.slug === "pop-race" ? "max-h-16 sm:max-h-20" : ""}
                              ${brand.slug !== "hot-wheels" && brand.slug !== "pop-race" ? "max-h-24 sm:max-h-32" : ""}`}
