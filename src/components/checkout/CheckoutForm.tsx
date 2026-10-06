@@ -97,53 +97,58 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
     fetchData();
   }, [items]);
 
+  // Helper — split comma-separated string into trimmed non-empty values
+  const parseTags = (str: string) =>
+    str ? str.split(",").map((s) => s.trim()).filter(Boolean) : [];
+
   // Build cascading dropdown options from delivery zones
-  // Unique states from all active zones
+  // Cities and townships are stored as comma-separated strings in each zone
   const stateOptions = useMemo(() => {
     const states = [...new Set(zones.map((z) => z.nameEn))];
     return states.sort();
   }, [zones]);
 
-  // Cities available for the selected state
+  // Cities available for the selected state — split comma-separated values
   const cityOptions = useMemo(() => {
     if (!delivery.state) return [];
-    const cities = [...new Set(
-      zones
-        .filter((z) => z.nameEn === delivery.state && z.city)
-        .map((z) => z.city)
-    )];
-    return cities.sort();
+    const cities = new Set<string>();
+    for (const z of zones) {
+      if (z.nameEn === delivery.state) {
+        for (const c of parseTags(z.city)) cities.add(c);
+      }
+    }
+    return [...cities].sort();
   }, [zones, delivery.state]);
 
-  // Townships available for the selected state + city
+  // Townships available for the selected state — split comma-separated values
   const townshipOptions = useMemo(() => {
     if (!delivery.state) return [];
-    const townships = [...new Set(
-      zones
-        .filter((z) =>
-          z.nameEn === delivery.state &&
-          (delivery.city ? z.city === delivery.city : true) &&
-          z.township
-        )
-        .map((z) => z.township)
-    )];
-    return townships.sort();
+    const townships = new Set<string>();
+    for (const z of zones) {
+      if (z.nameEn !== delivery.state) continue;
+      // If a city is selected, only show townships from zones that contain that city
+      if (delivery.city && !parseTags(z.city).includes(delivery.city)) continue;
+      for (const t of parseTags(z.township)) townships.add(t);
+    }
+    return [...townships].sort();
   }, [zones, delivery.state, delivery.city]);
 
-  // Find the matching zone for the selected state/city/township
+  // Find the matching zone — check if selected city/township appear in that zone's lists
   const matchedZone = useMemo(() => {
+    // Exact match: zone's city list includes selected city AND township list includes selected township
     return zones.find((z) =>
       z.nameEn === delivery.state &&
-      z.city === (delivery.city || "") &&
-      z.township === (delivery.township || "")
+      (delivery.city ? parseTags(z.city).includes(delivery.city) : !z.city) &&
+      (delivery.township ? parseTags(z.township).includes(delivery.township) : !z.township)
     ) || zones.find((z) =>
+      // Fallback: city matches, no township required
       z.nameEn === delivery.state &&
-      z.city === (delivery.city || "") &&
-      z.township === ""
+      (delivery.city ? parseTags(z.city).includes(delivery.city) : !z.city) &&
+      !z.township
     ) || zones.find((z) =>
+      // Fallback: state-only match
       z.nameEn === delivery.state &&
-      z.city === "" &&
-      z.township === ""
+      !z.city && !z.township
     );
   }, [zones, delivery.state, delivery.city, delivery.township]);
 
