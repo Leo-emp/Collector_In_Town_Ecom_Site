@@ -7,6 +7,8 @@ import { orders, orderItems, products, deliveryZones, promoCodes } from "@/lib/s
 import { orderSchema } from "@/lib/validation";
 import { checkRateLimit, ORDER_RATE_LIMIT } from "@/lib/rate-limit";
 import { sendAdminOrderNotification, sendCustomerOrderConfirmation } from "@/lib/email";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
 
 // Generate human-readable order number: CIT-XXXXX (5 random alphanumeric chars)
@@ -20,9 +22,17 @@ function generateOrderNumber(): string {
 }
 
 export async function POST(request: Request) {
-  // Rate limit by IP — 3 orders per minute
-  const ip = request.headers.get("x-forwarded-for") || "unknown";
-  const { allowed } = checkRateLimit(`order:${ip}`, ORDER_RATE_LIMIT);
+  // Require authenticated session — no guest checkout
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user) {
+    return NextResponse.json(
+      { error: "Sign in required to place an order" },
+      { status: 401 }
+    );
+  }
+
+  // Rate limit by user ID — 3 orders per minute
+  const { allowed } = checkRateLimit(`order:${session.user.id}`, ORDER_RATE_LIMIT);
   if (!allowed) {
     return NextResponse.json(
       { error: "Too many requests. Please wait a moment." },
@@ -147,6 +157,7 @@ export async function POST(request: Request) {
   await db.insert(orders).values({
     id: orderId,
     orderNumber,
+    authUserId: session.user.id,
     customerName: contact.name,
     customerEmail: contact.email,
     customerPhone: contact.phone,
