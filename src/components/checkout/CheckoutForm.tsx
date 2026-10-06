@@ -398,7 +398,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
         <p className="text-accent text-xl font-bold mb-6">{orderNumber}</p>
         {payment === "kbzpay" && (
           <p className="text-text-muted text-sm mb-4">
-            Your payment screenshot has been submitted. We will verify and confirm your order shortly.
+            Your payment screenshot has been submitted. We will verify and confirm your order.
           </p>
         )}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -632,7 +632,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
           <div className="space-y-4">
             <h2 className="text-text-primary font-semibold text-lg mb-4">{dict.checkout.payment}</h2>
 
-            {/* KBZ Pay option — default, always available */}
+            {/* KBZ Pay or AYA Pay option — default, always available */}
             <label className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-colors
               ${payment === "kbzpay" ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"}`}
             >
@@ -652,53 +652,64 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
                 <p className="text-text-primary font-medium">{dict.checkout.kbzpay}</p>
                 <p className="text-text-muted text-xs">{dict.checkout.kbzpayDescription}</p>
               </div>
-              {/* KBZ Pay logo */}
-              <div className="w-12 h-8 bg-[#003DA5] rounded flex items-center justify-center shrink-0">
-                <span className="text-white text-[8px] font-bold leading-tight text-center">KBZ<br/>Pay</span>
+              {/* KBZ + AYA logos */}
+              <div className="flex gap-1.5 shrink-0">
+                <div className="w-10 h-7 bg-[#003DA5] rounded flex items-center justify-center">
+                  <span className="text-white text-[7px] font-bold leading-tight text-center">KBZ<br/>Pay</span>
+                </div>
+                <div className="w-10 h-7 bg-[#C41E24] rounded flex items-center justify-center">
+                  <span className="text-white text-[7px] font-bold leading-tight text-center">AYA<br/>Pay</span>
+                </div>
               </div>
             </label>
 
-            {/* KBZ Pay QR codes — shown when KBZ Pay is selected */}
+            {/* KBZ Pay / AYA Pay QR codes — shown when mobile pay is selected */}
             {payment === "kbzpay" && (
               <div className="ml-9 space-y-4">
                 <p className="text-text-secondary text-sm">{dict.checkout.kbzpaySelectQr}</p>
 
-                {/* QR code selection */}
+                {/* QR code selection with labels */}
                 <div className="grid grid-cols-2 gap-4">
-                  {/* QR Code 1 — red background */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedQr(1)}
-                    className={`rounded-xl overflow-hidden border-2 transition-all
-                      ${selectedQr === 1 ? "border-accent ring-2 ring-accent/30" : "border-border hover:border-accent/30"}`}
-                  >
-                    <img
-                      src="/images/kbzpay-qr-1.jpg"
-                      alt="KBZ Pay QR - THIHA HTUT (*****2007)"
-                      className="w-full h-auto"
-                    />
-                  </button>
+                  {/* QR Code 1 — AYA Pay (red background) */}
+                  <div className="space-y-2">
+                    <p className="text-center text-sm font-semibold text-[#C41E24]">AYA Pay</p>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedQr(1)}
+                      className={`rounded-xl overflow-hidden border-2 transition-all w-full
+                        ${selectedQr === 1 ? "border-accent ring-2 ring-accent/30" : "border-border hover:border-accent/30"}`}
+                    >
+                      <img
+                        src="/images/ayapay-qr.jpg"
+                        alt="AYA Pay QR - THIHA HTUT (*****2007)"
+                        className="w-full h-auto"
+                      />
+                    </button>
+                  </div>
 
-                  {/* QR Code 2 — blue background */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedQr(2)}
-                    className={`rounded-xl overflow-hidden border-2 transition-all
-                      ${selectedQr === 2 ? "border-accent ring-2 ring-accent/30" : "border-border hover:border-accent/30"}`}
-                  >
-                    <img
-                      src="/images/kbzpay-qr-2.jpg"
-                      alt="KBZ Pay QR - THIHA HTUT (******2007)"
-                      className="w-full h-auto"
-                    />
-                  </button>
+                  {/* QR Code 2 — KBZ Pay (blue background) */}
+                  <div className="space-y-2">
+                    <p className="text-center text-sm font-semibold text-[#003DA5]">KBZ Pay</p>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedQr(2)}
+                      className={`rounded-xl overflow-hidden border-2 transition-all w-full
+                        ${selectedQr === 2 ? "border-accent ring-2 ring-accent/30" : "border-border hover:border-accent/30"}`}
+                    >
+                      <img
+                        src="/images/kbzpay-qr.jpg"
+                        alt="KBZ Pay QR - THIHA HTUT (******2007)"
+                        className="w-full h-auto"
+                      />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Amount to pay */}
                 <div className="bg-accent/10 border border-accent/20 rounded-lg px-4 py-3">
                   <p className="text-accent font-semibold text-lg">{formatPrice(total)}</p>
                   <p className="text-text-muted text-xs mt-1">
-                    Scan QR {selectedQr} and transfer this exact amount
+                    Scan the {selectedQr === 1 ? "AYA Pay" : "KBZ Pay"} QR and transfer this exact amount
                   </p>
                 </div>
 

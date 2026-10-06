@@ -1,5 +1,5 @@
 // Drizzle ORM schema — all tables for Collector In Town
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
 // Helper: UUID default for primary keys
@@ -95,7 +95,16 @@ export const products = sqliteTable("products", {
   updatedAt: text("updated_at")
     .notNull()
     .default(sql`(current_timestamp)`),
-});
+}, (table) => [
+  // Speeds up brand catalog pages (WHERE brand = ?)
+  index("idx_products_brand").on(table.brand),
+  // Speeds up filtering by active/sold_out/draft status
+  index("idx_products_status").on(table.status),
+  // Speeds up "newest first" sorting on catalog and landing
+  index("idx_products_created_at").on(table.createdAt),
+  // Composite index for the most common query pattern: brand + status + newest
+  index("idx_products_brand_status").on(table.brand, table.status),
+]);
 
 // ─── Product Images ─────────────────────────────────────
 // Photos stored in Vercel Blob, URLs saved here
@@ -113,7 +122,10 @@ export const productImages = sqliteTable("product_images", {
   createdAt: text("created_at")
     .notNull()
     .default(sql`(current_timestamp)`),
-});
+}, (table) => [
+  // Speeds up image lookups by product (WHERE product_id IN (...))
+  index("idx_product_images_product_id").on(table.productId),
+]);
 
 // ─── Delivery Zones ─────────────────────────────────────
 // Shipping regions with fees — Yangon, Mandalay, etc.
@@ -191,7 +203,7 @@ export const orders = sqliteTable("orders", {
   deliveryFee: integer("delivery_fee").notNull(),
   // Optional delivery instructions from customer
   deliveryNotes: text("delivery_notes"),
-  // Payment method — "card" (Stripe), "cod" (Cash on Delivery), or "kbzpay" (KBZ Pay QR)
+  // Payment method — "card" (Stripe), "cod" (Cash on Delivery), or "kbzpay" (KBZ Pay / AYA Pay QR)
   paymentMethod: text("payment_method").notNull(),
   // URL to payment proof screenshot (KBZ Pay orders) — stored in Vercel Blob
   paymentProofUrl: text("payment_proof_url"),
@@ -221,7 +233,14 @@ export const orders = sqliteTable("orders", {
   updatedAt: text("updated_at")
     .notNull()
     .default(sql`(current_timestamp)`),
-});
+}, (table) => [
+  // Speeds up COD eligibility check and customer order history lookups
+  index("idx_orders_customer_email").on(table.customerEmail),
+  // Speeds up admin order filtering by status
+  index("idx_orders_order_status").on(table.orderStatus),
+  // Speeds up payment status filtering
+  index("idx_orders_payment_status").on(table.paymentStatus),
+]);
 
 // ─── Order Items ────────────────────────────────────────
 // Line items within an order — snapshots price at time of purchase

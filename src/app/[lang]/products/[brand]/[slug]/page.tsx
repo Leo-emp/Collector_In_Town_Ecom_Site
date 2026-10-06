@@ -10,7 +10,7 @@ import { AddToCartButton } from "@/components/product/AddToCartButton";
 import { ProductCard } from "@/components/catalog/ProductCard";
 import { db } from "@/lib/drizzle";
 import { products, productImages } from "@/lib/schema";
-import { eq, and, ne, or } from "drizzle-orm";
+import { eq, and, ne, or, inArray } from "drizzle-orm";
 import type { Metadata } from "next";
 
 // Revalidate every 60 seconds — serves cached page, refreshes in background
@@ -83,10 +83,12 @@ export default async function ProductPage({
     )
     .limit(4);
 
-  // Fetch images for related products
+  // Fetch images only for related products (not ALL images in the DB)
   const relatedIds = relatedRaw.map((p) => p.id);
   const relatedImages = relatedIds.length > 0
-    ? await db.select().from(productImages).orderBy(productImages.displayOrder)
+    ? await db.select().from(productImages)
+        .where(inArray(productImages.productId, relatedIds))
+        .orderBy(productImages.displayOrder)
     : [];
 
   // Map related products to ProductCard format

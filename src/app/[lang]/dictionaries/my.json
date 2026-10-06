@@ -94,7 +94,7 @@
     "cardDescription": "Visa သို့မဟုတ် Mastercard ဖြင့် လုံခြုံစွာ ပေးချေပါ",
     "cod": "ပို့ဆောင်ချိန် ငွေသားပေးချေ",
     "codDescription": "သင့်အော်ဒါ ရောက်သောအခါ ငွေသားဖြင့် ပေးချေပါ",
-    "kbzpay": "KBZ Pay",
+    "kbzpay": "KBZ Pay or AYA Pay",
     "kbzpayDescription": "Scan QR code and upload payment screenshot",
     "kbzpaySelectQr": "Select a QR code to scan and pay",
     "kbzpayUploadProof": "Upload payment screenshot",

@@ -11,7 +11,7 @@ import { CatalogToolbar } from "@/components/catalog/CatalogToolbar";
 import { Pagination } from "@/components/catalog/Pagination";
 import { db } from "@/lib/drizzle";
 import { products, productImages } from "@/lib/schema";
-import { eq, like, desc, asc, and, or, count } from "drizzle-orm";
+import { eq, like, desc, asc, and, or, count, inArray } from "drizzle-orm";
 import type { Metadata } from "next";
 
 // Revalidate every 60 seconds — serves cached page, refreshes in background
@@ -102,9 +102,12 @@ export default async function CatalogPage({
     .limit(PRODUCTS_PER_PAGE)
     .offset(offset);
 
-  // Fetch images for these products
-  const allImages = productList.length > 0
-    ? await db.select().from(productImages).orderBy(productImages.displayOrder)
+  // Fetch images only for these products (not ALL images in the DB)
+  const productIds = productList.map((p) => p.id);
+  const allImages = productIds.length > 0
+    ? await db.select().from(productImages)
+        .where(inArray(productImages.productId, productIds))
+        .orderBy(productImages.displayOrder)
     : [];
 
   // Map to ProductCard format — match the expected interface

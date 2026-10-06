@@ -24,10 +24,11 @@ export async function GET(request: Request) {
       .select()
       .from(products)
       .where(inArray(products.id, idList));
-    // Fetch images for these products
+    // Fetch images only for these products (not ALL images in the DB)
     const allImages = await db
       .select()
       .from(productImages)
+      .where(inArray(productImages.productId, idList))
       .orderBy(productImages.displayOrder);
     const result = productList.map((p) => ({
       ...p,
@@ -72,11 +73,13 @@ export async function GET(request: Request) {
     .limit(PRODUCTS_PER_PAGE)
     .offset(offset);
 
-  // Fetch all product images (for a small catalog, fetching all is fine)
-  const allImages = productList.length > 0
+  // Fetch images only for these products (not ALL images in the DB)
+  const productIds = productList.map((p) => p.id);
+  const allImages = productIds.length > 0
     ? await db
         .select()
         .from(productImages)
+        .where(inArray(productImages.productId, productIds))
         .orderBy(productImages.displayOrder)
     : [];
 

@@ -94,7 +94,7 @@
     "cardDescription": "Pay securely with Visa or Mastercard",
     "cod": "Cash on Delivery",
     "codDescription": "Pay in cash when your order arrives",
-    "kbzpay": "KBZ Pay",
+    "kbzpay": "KBZ Pay or AYA Pay",
     "kbzpayDescription": "Scan QR code and upload payment screenshot",
     "kbzpaySelectQr": "Select a QR code to scan and pay",
     "kbzpayUploadProof": "Upload payment screenshot",

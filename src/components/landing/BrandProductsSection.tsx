@@ -5,7 +5,7 @@ import Link from "next/link";
 import { formatPrice } from "@/lib/format";
 import { db } from "@/lib/drizzle";
 import { products, productImages } from "@/lib/schema";
-import { eq, and, or, desc } from "drizzle-orm";
+import { eq, and, or, desc, inArray } from "drizzle-orm";
 
 interface BrandProductsSectionProps {
   lang: string;
@@ -63,9 +63,12 @@ export async function BrandProductsSection({ lang, brandSlug, brandName, brandLo
       .orderBy(desc(products.createdAt))
       .limit(8);
 
-    // Fetch images for these products
-    const allImages = productList.length > 0
-      ? await db.select().from(productImages).orderBy(productImages.displayOrder)
+    // Fetch images only for these products (not ALL images in the DB)
+    const productIds = productList.map((p) => p.id);
+    const allImages = productIds.length > 0
+      ? await db.select().from(productImages)
+          .where(inArray(productImages.productId, productIds))
+          .orderBy(productImages.displayOrder)
       : [];
 
     // Map products with their first image URL
