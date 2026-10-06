@@ -256,15 +256,23 @@ export default function AdminOrderDetailPage({
               </div>
             </div>
 
-            {/* KBZ Pay payment proof screenshot — only render if URL is a safe https link */}
+            {/* KBZ / AYA Pay payment proof screenshot — only render if URL is a safe https link */}
             {order.paymentMethod === "kbzpay" && order.paymentProofUrl && /^https:\/\//.test(order.paymentProofUrl) && (
               <div className="mt-4 pt-4 border-t border-border">
                 <p className="text-text-muted text-sm mb-2">KBZ Pay / AYA Pay Payment Proof</p>
+
+                {/* Expected amount — compare against the screenshot */}
+                <div className="bg-accent/10 border border-accent/20 rounded-lg px-4 py-3 mb-3">
+                  <p className="text-text-muted text-xs">Expected Transfer Amount</p>
+                  <p className="text-accent font-bold text-xl">{formatPrice(order.total)}</p>
+                  <p className="text-text-muted text-xs mt-1">Verify the screenshot shows this exact amount</p>
+                </div>
+
                 <a href={order.paymentProofUrl} target="_blank" rel="noopener noreferrer">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={order.paymentProofUrl}
-                    alt="KBZ Pay payment proof"
+                    alt="Payment proof screenshot"
                     className="max-w-sm max-h-64 rounded-lg border border-border object-contain cursor-pointer hover:opacity-80 transition-opacity"
                   />
                 </a>
