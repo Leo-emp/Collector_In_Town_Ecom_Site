@@ -161,6 +161,10 @@ export default function AdminProductEditPage({
   // Handle form submission — create or update
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.stock_count || form.stock_count < 1) {
+      setError("Stock count is required. Enter at least 1.");
+      return;
+    }
     setSaving(true);
     setError("");
 
@@ -416,7 +420,7 @@ export default function AdminProductEditPage({
               />
             </div>
             <div>
-              <label className="text-text-secondary text-sm block mb-1.5">Stock Count</label>
+              <label className="text-text-secondary text-sm block mb-1.5">Stock Count <span className="text-error">*</span></label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -424,6 +428,7 @@ export default function AdminProductEditPage({
                 onChange={(e) => setForm({ ...form, stock_count: parseInt(e.target.value.replace(/\D/g, "")) || 0 })}
                 placeholder="e.g. 10"
                 className={inputClass}
+                required
               />
             </div>
           </div>
