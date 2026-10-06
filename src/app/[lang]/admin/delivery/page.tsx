@@ -183,7 +183,6 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
   };
 
   const handleCreate = async () => {
-    if (!newState.trim()) return;
     setSaving(true);
     setError("");
     try {
@@ -339,7 +338,7 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
           </div>
           <button
             onClick={handleCreate}
-            disabled={saving || !newState.trim()}
+            disabled={saving}
             className="px-4 py-2 bg-accent text-background rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-50"
           >
             {saving ? "Adding..." : "Add Zone"}

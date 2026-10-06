@@ -67,9 +67,9 @@ export const promoSchema = z.object({
   expires_at: z.string().optional(),
 });
 
-// Delivery zone update — admin (all fields optional for partial updates)
+// Delivery zone update — admin (all fields optional, no required fields)
 export const deliveryZoneSchema = z.object({
-  name_en: z.string().min(1).max(100).optional(),
+  name_en: z.string().max(100).optional(),
   name_my: z.string().max(100).optional(),
   city: z.string().max(2000).optional(),
   township: z.string().max(2000).optional(),
