@@ -13,8 +13,8 @@ interface BrandProductsSectionProps {
   brandSlug: string;
   // Display name — e.g. "Mini GT", "Hot Wheels"
   brandName: string;
-  // Path to the brand logo image
-  brandLogo: string;
+  // Path to the brand logo image (optional — falls back to text name)
+  brandLogo?: string;
 }
 
 // Placeholder card component — shown when no real products exist
@@ -95,16 +95,20 @@ export async function BrandProductsSection({ lang, brandSlug, brandName, brandLo
         {/* Section header — brand logo + name + "View All" link */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <img
-              src={brandLogo}
-              alt={brandName}
-              className={`object-contain
-                ${brandSlug === "hot-wheels" ? "h-16 sm:h-24" : ""}
-                ${brandSlug === "mini-gt" ? "h-10 sm:h-14" : ""}
-                ${brandSlug === "inno64" ? "h-8 sm:h-10 w-auto" : ""}
-                ${brandSlug === "pop-race" ? "h-8 sm:h-11" : ""}
-              `}
-            />
+            {brandLogo && (
+              <img
+                src={brandLogo}
+                alt={brandName}
+                className={`object-contain
+                  ${brandSlug === "hot-wheels" ? "h-16 sm:h-24" : ""}
+                  ${brandSlug === "mini-gt" ? "h-10 sm:h-14" : ""}
+                  ${brandSlug === "inno64" ? "h-8 sm:h-10 w-auto" : ""}
+                  ${brandSlug === "pop-race" ? "h-8 sm:h-11" : ""}
+                  ${brandSlug === "tomica" ? "h-10 sm:h-14" : ""}
+                  ${!["hot-wheels","mini-gt","inno64","pop-race","tomica"].includes(brandSlug) ? "h-8 sm:h-12" : ""}
+                `}
+              />
+            )}
             <h3 className="font-[family-name:var(--font-cinzel)] text-2xl md:text-3xl text-text-primary">
               {brandName}
             </h3>

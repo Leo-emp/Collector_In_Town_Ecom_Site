@@ -15,10 +15,12 @@ interface NavbarProps {
 }
 
 const BRAND_NAV_KEYS: Record<string, keyof Dictionary["nav"]> = {
+  "special-items": "specialItems",
   "mini-gt": "miniGt",
   "hot-wheels": "hotWheels",
   inno64: "inno64",
   "pop-race": "popRace",
+  tomica: "tomica",
   other: "other",
 };
 

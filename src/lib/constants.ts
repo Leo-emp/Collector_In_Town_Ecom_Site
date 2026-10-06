@@ -1,9 +1,11 @@
 // Supported diecast brands — used for catalog routing, nav dropdown, product form
 export const BRANDS = [
+  { slug: "special-items", name: "Special Items", logo: null, blendMode: "none" as const },
   { slug: "mini-gt", name: "Mini GT", logo: "/images/brands/mini-gt.png", blendMode: "invert" as const },
   { slug: "hot-wheels", name: "Hot Wheels", logo: "/images/brands/hot-wheels.png", blendMode: "none" as const },
   { slug: "inno64", name: "Inno64", logo: "/images/brands/inno64.svg", blendMode: "none" as const },
   { slug: "pop-race", name: "Pop Race", logo: "/images/brands/pop-race.png", blendMode: "none" as const },
+  { slug: "tomica", name: "Tomica", logo: "/images/brands/tomica.png", blendMode: "none" as const },
   { slug: "other", name: "Other", logo: null, blendMode: "none" as const },
 ] as const;
 
