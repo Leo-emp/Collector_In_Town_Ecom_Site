@@ -1,8 +1,9 @@
-// Admin Delivery Zones page — manage zones (state/city/township) and fees
-// Client component — fetches zones and saves edits
+// Admin Delivery Zones page — manage state/city/township delivery areas and fees
+// Each zone entry = one state + city + township combo with its own fee
+// Admin adds multiple entries to build out coverage (e.g. same state, different townships)
 "use client";
 
-import { use, useState, useEffect, useCallback } from "react";
+import { use, useState, useEffect, useCallback, useMemo } from "react";
 import { formatPrice } from "@/lib/format";
 
 // Shape of delivery zone from the API
@@ -30,7 +31,7 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
   const [editFee, setEditFee] = useState<number>(0);
   const [editFeePerKg, setEditFeePerKg] = useState<number>(0);
   const [editEta, setEditEta] = useState("");
-  // Add zone form
+  // Add zone form — keeps state after create so admin can add more under same state
   const [showAdd, setShowAdd] = useState(false);
   const [newState, setNewState] = useState("");
   const [newCity, setNewCity] = useState("");
@@ -42,6 +43,7 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   // Fetch all delivery zones from the API
   const loadZones = useCallback(async () => {
@@ -60,6 +62,16 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
   useEffect(() => {
     loadZones();
   }, [loadZones]);
+
+  // Group zones by state for organized display
+  const groupedZones = useMemo(() => {
+    const groups: Record<string, DeliveryZone[]> = {};
+    for (const zone of zones) {
+      if (!groups[zone.nameEn]) groups[zone.nameEn] = [];
+      groups[zone.nameEn].push(zone);
+    }
+    return groups;
+  }, [zones]);
 
   // Start editing a zone — populate temp values
   const startEdit = (zone: DeliveryZone) => {
@@ -99,11 +111,12 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
     }
   };
 
-  // Create a new zone via POST
+  // Create a new zone — keeps state name so admin can quickly add more cities/townships
   const handleCreate = async () => {
     if (!newState.trim()) return;
     setSaving(true);
     setError("");
+    setSuccess("");
     try {
       const res = await fetch("/api/admin/delivery-zones", {
         method: "POST",
@@ -118,13 +131,11 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
         }),
       });
       if (!res.ok) throw new Error("Failed to create zone");
-      setShowAdd(false);
-      setNewState("");
+      // Keep the state name and fees so admin can add another city/township quickly
+      const added = `${newState}${newCity ? ` — ${newCity}` : ""}${newTownship ? ` — ${newTownship}` : ""}`;
       setNewCity("");
       setNewTownship("");
-      setNewFee(0);
-      setNewFeePerKg(0);
-      setNewEta("");
+      setSuccess(`Added: ${added}. Add another city/township or close the form.`);
       await loadZones();
     } catch {
       setError("Failed to create zone");
@@ -135,7 +146,8 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
 
   // Delete a zone permanently via DELETE
   const handleDelete = async (zone: DeliveryZone) => {
-    if (!confirm(`Delete "${zone.nameEn}${zone.city ? ` — ${zone.city}` : ""}${zone.township ? ` — ${zone.township}` : ""}"? This cannot be undone.`)) return;
+    const label = [zone.nameEn, zone.city, zone.township].filter(Boolean).join(" — ");
+    if (!confirm(`Delete "${label}"? This cannot be undone.`)) return;
     setError("");
     try {
       const res = await fetch(`/api/admin/delivery-zones/${zone.id}`, {
@@ -178,36 +190,37 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-[family-name:var(--font-cinzel)] text-2xl text-text-primary">Delivery Zones</h1>
         <button
-          onClick={() => setShowAdd(!showAdd)}
+          onClick={() => { setShowAdd(!showAdd); setSuccess(""); }}
           className="px-4 py-2 bg-accent text-background rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
         >
-          {showAdd ? "Cancel" : "+ Add Zone"}
+          {showAdd ? "Close" : "+ Add Zone"}
         </button>
       </div>
 
-      {/* Info banner — explains the state/city/township structure */}
+      {/* Info banner */}
       <div className="bg-accent/5 border border-accent/20 rounded-lg px-4 py-3 mb-6 text-text-secondary text-sm">
-        Each delivery zone = <strong>State</strong> + <strong>City</strong> + <strong>Township</strong>. Customers can only checkout if their location matches an active zone.
+        Add one entry per <strong>State + City + Township</strong> combination. You can add multiple cities and townships under the same state. Customers will only see locations you have set up here.
       </div>
 
       {/* Add zone form */}
       {showAdd && (
         <div className="bg-surface rounded-xl border border-border p-5 mb-6">
-          <h3 className="text-text-primary font-semibold mb-4">New Delivery Zone</h3>
-          {/* State, City, Township row */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+          <h3 className="text-text-primary font-semibold mb-4">Add Delivery Zone</h3>
+          {/* State */}
+          <div className="mb-4">
+            <label className="text-text-muted text-xs block mb-1">State / Division *</label>
+            <input
+              type="text"
+              value={newState}
+              onChange={(e) => setNewState(e.target.value)}
+              placeholder="e.g. Yangon Region"
+              className={inputClass}
+            />
+          </div>
+          {/* City and Township on same row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
             <div>
-              <label className="text-text-muted text-xs block mb-1">State / Region *</label>
-              <input
-                type="text"
-                value={newState}
-                onChange={(e) => setNewState(e.target.value)}
-                placeholder="e.g. Yangon Region"
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className="text-text-muted text-xs block mb-1">City</label>
+              <label className="text-text-muted text-xs block mb-1">City *</label>
               <input
                 type="text"
                 value={newCity}
@@ -217,7 +230,7 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
               />
             </div>
             <div>
-              <label className="text-text-muted text-xs block mb-1">Township</label>
+              <label className="text-text-muted text-xs block mb-1">Township *</label>
               <input
                 type="text"
                 value={newTownship}
@@ -227,7 +240,7 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
               />
             </div>
           </div>
-          {/* Fees and ETA row */}
+          {/* Fees and ETA */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
             <div>
               <label className="text-text-muted text-xs block mb-1">Base Fee (MMK)</label>
@@ -262,12 +275,18 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
               />
             </div>
           </div>
+          {/* Success message */}
+          {success && (
+            <div className="bg-success/10 border border-success/20 rounded-lg px-4 py-2 mb-4 text-success text-sm">
+              {success}
+            </div>
+          )}
           <button
             onClick={handleCreate}
             disabled={saving || !newState.trim()}
             className="px-4 py-2 bg-accent text-background rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-50"
           >
-            {saving ? "Creating..." : "Create Zone"}
+            {saving ? "Adding..." : "Add Zone"}
           </button>
         </div>
       )}
@@ -278,146 +297,116 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {zones.map((zone) => (
-          <div key={zone.id} className="bg-surface rounded-xl border border-border p-5">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                {/* State name as main title */}
-                <h3 className="text-text-primary font-semibold">{zone.nameEn}</h3>
-                {/* City and township as subtitle */}
-                {(zone.city || zone.township) && (
-                  <p className="text-text-muted text-sm">
-                    {[zone.city, zone.township].filter(Boolean).join(" — ")}
-                  </p>
-                )}
-              </div>
-              <button
-                onClick={() => toggleActive(zone)}
-                className={`text-xs font-medium px-2.5 py-1 rounded-full cursor-pointer hover:opacity-80
-                  ${zone.isActive ? "bg-success/10 text-success" : "bg-error/10 text-error"}`}
-              >
-                {zone.isActive ? "Active" : "Inactive"}
-              </button>
-            </div>
+      {/* Zones grouped by state */}
+      {Object.keys(groupedZones).length === 0 ? (
+        <div className="text-center py-12 text-text-muted">
+          No delivery zones yet. Click &quot;+ Add Zone&quot; to create one.
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {Object.entries(groupedZones).map(([stateName, stateZones]) => (
+            <div key={stateName}>
+              {/* State header */}
+              <h2 className="text-text-primary font-semibold text-lg mb-3 flex items-center gap-2">
+                {stateName}
+                <span className="text-text-muted text-sm font-normal">
+                  ({stateZones.length} {stateZones.length === 1 ? "zone" : "zones"})
+                </span>
+              </h2>
 
-            {editing === zone.id ? (
-              // Edit mode — inline form with all fields
-              <div className="space-y-3">
-                {/* State, City, Township fields */}
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="text-text-muted text-xs block mb-1">State / Region</label>
-                    <input
-                      type="text"
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-text-muted text-xs block mb-1">City</label>
-                    <input
-                      type="text"
-                      value={editCity}
-                      onChange={(e) => setEditCity(e.target.value)}
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-text-muted text-xs block mb-1">Township</label>
-                    <input
-                      type="text"
-                      value={editTownship}
-                      onChange={(e) => setEditTownship(e.target.value)}
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
-                {/* Fee fields */}
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="text-text-muted text-xs block mb-1">Base Fee (MMK)</label>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={editFee || ""}
-                      onChange={(e) => setEditFee(parseInt(e.target.value.replace(/\D/g, "")) || 0)}
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-text-muted text-xs block mb-1">Per kg (MMK)</label>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={editFeePerKg || ""}
-                      onChange={(e) => setEditFeePerKg(parseInt(e.target.value.replace(/\D/g, "")) || 0)}
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-text-muted text-xs block mb-1">ETA</label>
-                    <input
-                      type="text"
-                      value={editEta}
-                      onChange={(e) => setEditEta(e.target.value)}
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleSave(zone)}
-                    disabled={saving}
-                    className="px-4 py-2 bg-accent text-background rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-50"
-                  >
-                    {saving ? "Saving..." : "Save"}
-                  </button>
-                  <button
-                    onClick={() => setEditing(null)}
-                    className="px-4 py-2 text-text-secondary text-sm hover:text-text-primary transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
+              {/* Zone entries table */}
+              <div className="bg-surface rounded-xl border border-border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-surface-hover/30">
+                      <th className="text-left text-text-muted font-medium px-4 py-2.5">City</th>
+                      <th className="text-left text-text-muted font-medium px-4 py-2.5">Township</th>
+                      <th className="text-right text-text-muted font-medium px-4 py-2.5">Base Fee</th>
+                      <th className="text-right text-text-muted font-medium px-4 py-2.5">Per kg</th>
+                      <th className="text-left text-text-muted font-medium px-4 py-2.5">ETA</th>
+                      <th className="text-center text-text-muted font-medium px-4 py-2.5">Status</th>
+                      <th className="text-right text-text-muted font-medium px-4 py-2.5">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stateZones.map((zone) => (
+                      editing === zone.id ? (
+                        // Inline edit row
+                        <tr key={zone.id} className="border-b border-border last:border-0 bg-accent/5">
+                          <td colSpan={7} className="px-4 py-4">
+                            <div className="space-y-3">
+                              <div className="grid grid-cols-3 gap-3">
+                                <div>
+                                  <label className="text-text-muted text-xs block mb-1">State</label>
+                                  <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className={inputClass} />
+                                </div>
+                                <div>
+                                  <label className="text-text-muted text-xs block mb-1">City</label>
+                                  <input type="text" value={editCity} onChange={(e) => setEditCity(e.target.value)} className={inputClass} />
+                                </div>
+                                <div>
+                                  <label className="text-text-muted text-xs block mb-1">Township</label>
+                                  <input type="text" value={editTownship} onChange={(e) => setEditTownship(e.target.value)} className={inputClass} />
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-3 gap-3">
+                                <div>
+                                  <label className="text-text-muted text-xs block mb-1">Base Fee (MMK)</label>
+                                  <input type="text" inputMode="numeric" value={editFee || ""} onChange={(e) => setEditFee(parseInt(e.target.value.replace(/\D/g, "")) || 0)} className={inputClass} />
+                                </div>
+                                <div>
+                                  <label className="text-text-muted text-xs block mb-1">Per kg (MMK)</label>
+                                  <input type="text" inputMode="numeric" value={editFeePerKg || ""} onChange={(e) => setEditFeePerKg(parseInt(e.target.value.replace(/\D/g, "")) || 0)} className={inputClass} />
+                                </div>
+                                <div>
+                                  <label className="text-text-muted text-xs block mb-1">ETA</label>
+                                  <input type="text" value={editEta} onChange={(e) => setEditEta(e.target.value)} className={inputClass} />
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <button onClick={() => handleSave(zone)} disabled={saving} className="px-4 py-2 bg-accent text-background rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors disabled:opacity-50">
+                                  {saving ? "Saving..." : "Save"}
+                                </button>
+                                <button onClick={() => setEditing(null)} className="px-4 py-2 text-text-secondary text-sm hover:text-text-primary transition-colors">
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : (
+                        // View row
+                        <tr key={zone.id} className="border-b border-border last:border-0 hover:bg-surface-hover/50 transition-colors">
+                          <td className="px-4 py-2.5 text-text-primary">{zone.city || "—"}</td>
+                          <td className="px-4 py-2.5 text-text-primary">{zone.township || "—"}</td>
+                          <td className="px-4 py-2.5 text-right text-accent font-medium">{formatPrice(zone.fee)}</td>
+                          <td className="px-4 py-2.5 text-right text-text-secondary">{zone.feePerKg > 0 ? formatPrice(zone.feePerKg) : "—"}</td>
+                          <td className="px-4 py-2.5 text-text-secondary">{zone.estimatedTime || "—"}</td>
+                          <td className="px-4 py-2.5 text-center">
+                            <button
+                              onClick={() => toggleActive(zone)}
+                              className={`text-xs font-medium px-2 py-0.5 rounded-full cursor-pointer hover:opacity-80
+                                ${zone.isActive ? "bg-success/10 text-success" : "bg-error/10 text-error"}`}
+                            >
+                              {zone.isActive ? "Active" : "Off"}
+                            </button>
+                          </td>
+                          <td className="px-4 py-2.5 text-right">
+                            <div className="flex items-center justify-end gap-3">
+                              <button onClick={() => startEdit(zone)} className="text-accent text-xs hover:underline">Edit</button>
+                              <button onClick={() => handleDelete(zone)} className="text-error text-xs hover:underline">Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            ) : (
-              // View mode — display location, fees, and ETA
-              <div>
-                <div className="flex justify-between text-sm mb-3">
-                  <span className="text-text-muted">Base Fee</span>
-                  <span className="text-accent font-medium">{formatPrice(zone.fee)}</span>
-                </div>
-                {zone.feePerKg > 0 && (
-                  <div className="flex justify-between text-sm mb-3">
-                    <span className="text-text-muted">Per kg</span>
-                    <span className="text-accent font-medium">+ {formatPrice(zone.feePerKg)}/kg</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-sm mb-4">
-                  <span className="text-text-muted">Estimated Delivery</span>
-                  <span className="text-text-primary">{zone.estimatedTime || "—"}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => startEdit(zone)}
-                    className="text-accent text-sm hover:underline"
-                  >
-                    Edit Zone
-                  </button>
-                  <button
-                    onClick={() => handleDelete(zone)}
-                    className="text-error text-sm hover:underline"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -408,66 +408,68 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
           <div className="space-y-4">
             <h2 className="text-text-primary font-semibold text-lg mb-4">{dict.checkout.delivery}</h2>
 
-            {/* State / City / Township — cascading dropdowns from delivery zones */}
+            {/* State / Division dropdown */}
             <div>
-              <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.state || "State / Region"}</label>
+              <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.state || "State / Division"}</label>
               <select
                 value={delivery.state}
                 onChange={(e) => setDelivery({ ...delivery, state: e.target.value, city: "", township: "", zone: "" })}
                 className={inputClass}
               >
-                <option value="">-- Select State / Region --</option>
+                <option value="">-- Select State / Division --</option>
                 {stateOptions.map((state) => (
                   <option key={state} value={state}>{state}</option>
                 ))}
               </select>
             </div>
 
-            {/* City and Township side by side — only appear after state is selected */}
-            {delivery.state && (
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.city}</label>
-                  <select
-                    value={delivery.city}
-                    onChange={(e) => setDelivery({ ...delivery, city: e.target.value, township: "", zone: "" })}
-                    className={inputClass}
-                    disabled={cityOptions.length === 0}
-                  >
-                    {cityOptions.length === 0 ? (
-                      <option value="">No cities available</option>
-                    ) : (
-                      <>
-                        <option value="">-- Select City --</option>
-                        {cityOptions.map((city) => (
-                          <option key={city} value={city}>{city}</option>
-                        ))}
-                      </>
-                    )}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.township}</label>
-                  <select
-                    value={delivery.township}
-                    onChange={(e) => setDelivery({ ...delivery, township: e.target.value, zone: "" })}
-                    className={inputClass}
-                    disabled={townshipOptions.length === 0}
-                  >
-                    {townshipOptions.length === 0 ? (
-                      <option value="">No townships available</option>
-                    ) : (
-                      <>
-                        <option value="">-- Select Township --</option>
-                        {townshipOptions.map((twp) => (
-                          <option key={twp} value={twp}>{twp}</option>
-                        ))}
-                      </>
-                    )}
-                  </select>
-                </div>
-              </div>
-            )}
+            {/* City dropdown — filtered by selected state */}
+            <div>
+              <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.city}</label>
+              <select
+                value={delivery.city}
+                onChange={(e) => setDelivery({ ...delivery, city: e.target.value, township: "", zone: "" })}
+                className={inputClass}
+                disabled={!delivery.state || cityOptions.length === 0}
+              >
+                {!delivery.state ? (
+                  <option value="">-- Select State first --</option>
+                ) : cityOptions.length === 0 ? (
+                  <option value="">-- No cities available --</option>
+                ) : (
+                  <>
+                    <option value="">-- Select City --</option>
+                    {cityOptions.map((city) => (
+                      <option key={city} value={city}>{city}</option>
+                    ))}
+                  </>
+                )}
+              </select>
+            </div>
+
+            {/* Township dropdown — filtered by selected state + city */}
+            <div>
+              <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.township}</label>
+              <select
+                value={delivery.township}
+                onChange={(e) => setDelivery({ ...delivery, township: e.target.value, zone: "" })}
+                className={inputClass}
+                disabled={!delivery.state || townshipOptions.length === 0}
+              >
+                {!delivery.state ? (
+                  <option value="">-- Select State first --</option>
+                ) : townshipOptions.length === 0 ? (
+                  <option value="">-- No townships available --</option>
+                ) : (
+                  <>
+                    <option value="">-- Select Township --</option>
+                    {townshipOptions.map((twp) => (
+                      <option key={twp} value={twp}>{twp}</option>
+                    ))}
+                  </>
+                )}
+              </select>
+            </div>
 
             {/* Delivery availability feedback */}
             {delivery.state && matchedZone && (
