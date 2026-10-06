@@ -14,8 +14,10 @@ interface NavbarProps {
   dict: Dictionary;
 }
 
+// Slugs hidden from the navbar (still exist as brands elsewhere)
+const HIDDEN_NAV_SLUGS = ["special-items", "other"];
+
 const BRAND_NAV_KEYS: Record<string, keyof Dictionary["nav"]> = {
-  "special-items": "specialItems",
   "mini-gt": "miniGt",
   "hot-wheels": "hotWheels",
   inno64: "inno64",
@@ -24,7 +26,6 @@ const BRAND_NAV_KEYS: Record<string, keyof Dictionary["nav"]> = {
   "trends-hobby": "trendsHobby",
   tarmac: "tarmac",
   greenlight: "greenlight",
-  other: "other",
 };
 
 export function Navbar({ lang, dict }: NavbarProps) {
@@ -56,14 +57,7 @@ export function Navbar({ lang, dict }: NavbarProps) {
           </Link>
 
           <div className="hidden lg:flex items-center gap-1">
-            <Link
-              href={localePath("/products/new-arrivals")}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${navLinkClass(localePath("/products/new-arrivals"))}`}
-            >
-              {dict.nav.newArrivals}
-            </Link>
-
-            {BRANDS.map((brand) => (
+            {BRANDS.filter((brand) => !HIDDEN_NAV_SLUGS.includes(brand.slug)).map((brand) => (
               <Link
                 key={brand.slug}
                 href={localePath(`/products/${brand.slug}`)}
@@ -121,14 +115,7 @@ export function Navbar({ lang, dict }: NavbarProps) {
 
         {mobileMenuOpen && (
           <div className={`lg:hidden border-t py-4 space-y-1 ${isDark ? "border-[#262626]" : "border-[#e7e5e4]"}`}>
-            <Link
-              href={localePath("/products/new-arrivals")}
-              onClick={() => setMobileMenuOpen(false)}
-              className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${navLinkClass(localePath("/products/new-arrivals"))}`}
-            >
-              {dict.nav.newArrivals}
-            </Link>
-            {BRANDS.map((brand) => (
+            {BRANDS.filter((brand) => !HIDDEN_NAV_SLUGS.includes(brand.slug)).map((brand) => (
               <Link
                 key={brand.slug}
                 href={localePath(`/products/${brand.slug}`)}
