@@ -1,6 +1,8 @@
 // CheckoutForm — multi-step checkout wired to real APIs
+// Requires signed-in user — redirects to sign-in if not authenticated
 // Fetches delivery zones and product data from API, submits orders to POST /api/orders
-// Customers can only checkout from locations that match an active delivery zone
+// KBZ Pay: shows QR codes, requires payment screenshot upload
+// COD: only available for returning customers (not first-time buyers)
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -8,6 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/format";
+import { authClient } from "@/lib/auth-client";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 
 // Shape of delivery zone from the API — includes state/city/township
@@ -53,10 +56,15 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  // Auth session — required for checkout
+  const { data: session, isPending: sessionLoading } = authClient.useSession();
+
   // Data from APIs
   const [zones, setZones] = useState<DeliveryZone[]>([]);
   const [productMap, setProductMap] = useState<Map<string, ProductData>>(new Map());
   const [loading, setLoading] = useState(true);
+  // Whether this customer has previous completed orders (determines COD availability)
+  const [hasOrderHistory, setHasOrderHistory] = useState(false);
 
   // Form state
   const [contact, setContact] = useState({ name: "", email: "", phone: "" });
@@ -64,10 +72,28 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
     address: "", state: "", city: "", township: "", zone: "", notes: "",
   });
   const [promoCode, setPromoCode] = useState("");
-  // "card" = Stripe Checkout (Visa/Mastercard), "cod" = Cash on Delivery
-  const [payment, setPayment] = useState<"card" | "cod">("card");
+  // "card" = Stripe Checkout, "cod" = Cash on Delivery, "kbzpay" = KBZ Pay QR
+  const [payment, setPayment] = useState<"card" | "cod" | "kbzpay">("kbzpay");
 
-  // Fetch delivery zones and product data on mount
+  // KBZ Pay screenshot upload state
+  const [paymentProofUrl, setPaymentProofUrl] = useState("");
+  const [uploadingProof, setUploadingProof] = useState(false);
+  const [proofPreview, setProofPreview] = useState("");
+  // Which QR code the user selected (1 or 2)
+  const [selectedQr, setSelectedQr] = useState<1 | 2>(1);
+
+  // Auto-fill contact info from auth session when it loads
+  useEffect(() => {
+    if (session?.user) {
+      setContact((prev) => ({
+        name: prev.name || session.user.name || "",
+        email: prev.email || session.user.email || "",
+        phone: prev.phone || "",
+      }));
+    }
+  }, [session]);
+
+  // Fetch delivery zones, product data, and order history on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -97,12 +123,20 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
     fetchData();
   }, [items]);
 
+  // Check order history when session email is available
+  useEffect(() => {
+    if (!session?.user?.email) return;
+    fetch(`/api/orders/has-history?email=${encodeURIComponent(session.user.email)}`)
+      .then((res) => res.json())
+      .then((data) => setHasOrderHistory(data.hasHistory))
+      .catch(() => {});
+  }, [session?.user?.email]);
+
   // Helper — split comma-separated string into trimmed non-empty values
   const parseTags = (str: string) =>
     str ? str.split(",").map((s) => s.trim()).filter(Boolean) : [];
 
   // Build cascading dropdown options from delivery zones
-  // Cities and townships are stored as comma-separated strings in each zone
   const stateOptions = useMemo(() => {
     const states = [...new Set(zones.map((z) => z.nameEn))];
     return states.sort();
@@ -126,27 +160,23 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
     const townships = new Set<string>();
     for (const z of zones) {
       if (z.nameEn !== delivery.state) continue;
-      // If a city is selected, only show townships from zones that contain that city
       if (delivery.city && !parseTags(z.city).includes(delivery.city)) continue;
       for (const t of parseTags(z.township)) townships.add(t);
     }
     return [...townships].sort();
   }, [zones, delivery.state, delivery.city]);
 
-  // Find the matching zone — check if selected city/township appear in that zone's lists
+  // Find the matching zone
   const matchedZone = useMemo(() => {
-    // Exact match: zone's city list includes selected city AND township list includes selected township
     return zones.find((z) =>
       z.nameEn === delivery.state &&
       (delivery.city ? parseTags(z.city).includes(delivery.city) : !z.city) &&
       (delivery.township ? parseTags(z.township).includes(delivery.township) : !z.township)
     ) || zones.find((z) =>
-      // Fallback: city matches, no township required
       z.nameEn === delivery.state &&
       (delivery.city ? parseTags(z.city).includes(delivery.city) : !z.city) &&
       !z.township
     ) || zones.find((z) =>
-      // Fallback: state-only match
       z.nameEn === delivery.state &&
       !z.city && !z.township
     );
@@ -157,26 +187,54 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
     .map((item) => {
       const p = productMap.get(item.productId);
       if (!p) return null;
-      return {
-        product: p,
-        quantity: item.quantity,
-      };
+      return { product: p, quantity: item.quantity };
     })
     .filter(Boolean) as { product: ProductData; quantity: number }[];
 
   const subtotal = cartProducts.reduce(
     (sum, { product, quantity }) => sum + product.price * quantity, 0
   );
-  // Total weight in grams across all cart items
   const totalWeightGrams = cartProducts.reduce(
     (sum, { product, quantity }) => sum + (product.weight || 0) * quantity, 0
   );
-  // Delivery fee = base fee + (weight in kg rounded up) × per-kg rate
   const weightKg = Math.ceil(totalWeightGrams / 1000);
   const deliveryFee = matchedZone ? matchedZone.fee + weightKg * (matchedZone.feePerKg || 0) : 0;
   const total = subtotal + deliveryFee;
 
   const currentStepIndex = STEPS.indexOf(currentStep);
+
+  // Handle KBZ Pay screenshot upload
+  const handleProofUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Show preview immediately
+    const reader = new FileReader();
+    reader.onload = () => setProofPreview(reader.result as string);
+    reader.readAsDataURL(file);
+
+    // Upload to Vercel Blob
+    setUploadingProof(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/orders/payment-proof", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Upload failed");
+      }
+      const data = await res.json();
+      setPaymentProofUrl(data.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to upload screenshot");
+      setProofPreview("");
+    } finally {
+      setUploadingProof(false);
+    }
+  };
 
   // Validate current step before advancing
   const canAdvance = () => {
@@ -184,9 +242,10 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
       case "contact":
         return contact.name.trim() && contact.email.trim() && contact.phone.trim();
       case "delivery":
-        // Must have address, state, city, township, and a matching delivery zone
         return delivery.address.trim() && delivery.state && delivery.city && delivery.township && matchedZone;
       case "payment":
+        // KBZ Pay requires uploaded proof screenshot
+        if (payment === "kbzpay") return !!paymentProofUrl;
         return true;
       default:
         return false;
@@ -231,6 +290,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
             quantity: i.quantity,
           })),
           payment_method: payment,
+          payment_proof_url: payment === "kbzpay" ? paymentProofUrl : undefined,
           promo_code: promoCode || undefined,
         }),
       });
@@ -258,7 +318,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
         throw new Error("Failed to create payment session");
       }
 
-      // For COD, show confirmation directly
+      // For COD and KBZ Pay, show confirmation directly
       setOrderNumber(data.order.orderNumber);
       setTrackingToken(data.trackingToken);
       setOrderPlaced(true);
@@ -269,6 +329,49 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
       setSubmitting(false);
     }
   };
+
+  // Auth loading state
+  if (sessionLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Not signed in — show sign-in prompt
+  if (!session?.user) {
+    return (
+      <div className="text-center py-16">
+        <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </div>
+        <h2 className="font-[family-name:var(--font-cinzel)] text-2xl text-text-primary mb-2">
+          {dict.checkout.signInRequired}
+        </h2>
+        <p className="text-text-secondary mb-6">{dict.checkout.signInToCheckout}</p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link
+            href={`/${lang}/sign-in?redirect=/${lang}/checkout`}
+            className="inline-block px-8 py-3 bg-accent text-background rounded-lg
+                       font-semibold hover:bg-accent-hover transition-colors"
+          >
+            {dict.nav.signIn}
+          </Link>
+          <Link
+            href={`/${lang}/sign-up?redirect=/${lang}/checkout`}
+            className="inline-block px-8 py-3 border border-border text-text-primary rounded-lg
+                       font-semibold hover:bg-surface-hover transition-colors"
+          >
+            {dict.nav.signUp}
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   // Loading state while fetching zones and products
   if (loading) {
@@ -293,6 +396,11 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
         </h2>
         <p className="text-text-secondary mb-1">{dict.checkout.orderNumber}</p>
         <p className="text-accent text-xl font-bold mb-6">{orderNumber}</p>
+        {payment === "kbzpay" && (
+          <p className="text-text-muted text-sm mb-4">
+            Your payment screenshot has been submitted. We will verify and confirm your order shortly.
+          </p>
+        )}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href={`/${lang}`}
@@ -372,9 +480,6 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
         {currentStep === "contact" && (
           <div className="space-y-4">
             <h2 className="text-text-primary font-semibold text-lg mb-4">{dict.checkout.contact}</h2>
-            <p className="text-text-muted text-sm mb-4">
-              {dict.checkout.guestCheckout} — {dict.checkout.orSignIn}
-            </p>
             <div>
               <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.name}</label>
               <input
@@ -428,7 +533,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
               </select>
             </div>
 
-            {/* City dropdown — filtered by selected state */}
+            {/* City dropdown */}
             <div>
               <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.city} <span className="text-error">*</span></label>
               <select
@@ -452,7 +557,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
               </select>
             </div>
 
-            {/* Township dropdown — filtered by selected state + city */}
+            {/* Township dropdown */}
             <div>
               <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.township} <span className="text-error">*</span></label>
               <select
@@ -527,6 +632,139 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
           <div className="space-y-4">
             <h2 className="text-text-primary font-semibold text-lg mb-4">{dict.checkout.payment}</h2>
 
+            {/* KBZ Pay option — default, always available */}
+            <label className={`flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-colors
+              ${payment === "kbzpay" ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"}`}
+            >
+              <input
+                type="radio"
+                name="payment"
+                value="kbzpay"
+                checked={payment === "kbzpay"}
+                onChange={() => setPayment("kbzpay")}
+                className="sr-only"
+              />
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5
+                ${payment === "kbzpay" ? "border-accent" : "border-border"}`}>
+                {payment === "kbzpay" && <div className="w-2.5 h-2.5 rounded-full bg-accent" />}
+              </div>
+              <div className="flex-1">
+                <p className="text-text-primary font-medium">{dict.checkout.kbzpay}</p>
+                <p className="text-text-muted text-xs">{dict.checkout.kbzpayDescription}</p>
+              </div>
+              {/* KBZ Pay logo */}
+              <div className="w-12 h-8 bg-[#003DA5] rounded flex items-center justify-center shrink-0">
+                <span className="text-white text-[8px] font-bold leading-tight text-center">KBZ<br/>Pay</span>
+              </div>
+            </label>
+
+            {/* KBZ Pay QR codes — shown when KBZ Pay is selected */}
+            {payment === "kbzpay" && (
+              <div className="ml-9 space-y-4">
+                <p className="text-text-secondary text-sm">{dict.checkout.kbzpaySelectQr}</p>
+
+                {/* QR code selection */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* QR Code 1 — red background */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedQr(1)}
+                    className={`rounded-xl overflow-hidden border-2 transition-all
+                      ${selectedQr === 1 ? "border-accent ring-2 ring-accent/30" : "border-border hover:border-accent/30"}`}
+                  >
+                    <img
+                      src="/images/kbzpay-qr-1.jpg"
+                      alt="KBZ Pay QR - THIHA HTUT (*****2007)"
+                      className="w-full h-auto"
+                    />
+                  </button>
+
+                  {/* QR Code 2 — blue background */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedQr(2)}
+                    className={`rounded-xl overflow-hidden border-2 transition-all
+                      ${selectedQr === 2 ? "border-accent ring-2 ring-accent/30" : "border-border hover:border-accent/30"}`}
+                  >
+                    <img
+                      src="/images/kbzpay-qr-2.jpg"
+                      alt="KBZ Pay QR - THIHA HTUT (******2007)"
+                      className="w-full h-auto"
+                    />
+                  </button>
+                </div>
+
+                {/* Amount to pay */}
+                <div className="bg-accent/10 border border-accent/20 rounded-lg px-4 py-3">
+                  <p className="text-accent font-semibold text-lg">{formatPrice(total)}</p>
+                  <p className="text-text-muted text-xs mt-1">
+                    Scan QR {selectedQr} and transfer this exact amount
+                  </p>
+                </div>
+
+                {/* Screenshot upload */}
+                <div>
+                  <label className="text-text-secondary text-sm block mb-1.5">
+                    {dict.checkout.kbzpayUploadProof} <span className="text-error">*</span>
+                  </label>
+                  <p className="text-text-muted text-xs mb-3">{dict.checkout.kbzpayUploadHint}</p>
+
+                  {/* Upload area */}
+                  {!proofPreview ? (
+                    <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-border
+                                      rounded-xl cursor-pointer hover:border-accent/50 transition-colors bg-surface/50">
+                      <svg className="w-10 h-10 text-text-muted/40 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-text-muted text-sm">Tap to upload screenshot</span>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={handleProofUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  ) : (
+                    <div className="relative">
+                      {/* Preview of uploaded screenshot */}
+                      <div className="rounded-xl overflow-hidden border border-border">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={proofPreview} alt="Payment proof" className="w-full max-h-64 object-contain bg-surface" />
+                      </div>
+
+                      {/* Upload status */}
+                      {uploadingProof ? (
+                        <div className="absolute inset-0 bg-background/60 flex items-center justify-center rounded-xl">
+                          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      ) : paymentProofUrl ? (
+                        <div className="mt-2 flex items-center gap-2 text-success text-sm">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          {dict.checkout.kbzpayUploaded}
+                        </div>
+                      ) : null}
+
+                      {/* Replace button */}
+                      <label className="absolute top-2 right-2 px-3 py-1.5 bg-background/80 backdrop-blur-sm
+                                        rounded-lg text-xs text-text-secondary cursor-pointer hover:bg-background
+                                        border border-border transition-colors">
+                        Replace
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          onChange={handleProofUpload}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Credit / Debit Card option (Stripe Checkout) */}
             <label className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-colors
               ${payment === "card" ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"}`}
@@ -559,27 +797,37 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
               </div>
             </label>
 
-            {/* Cash on Delivery option */}
-            <label className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-colors
-              ${payment === "cod" ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"}`}
-            >
-              <input
-                type="radio"
-                name="payment"
-                value="cod"
-                checked={payment === "cod"}
-                onChange={() => setPayment("cod")}
-                className="sr-only"
-              />
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center
-                ${payment === "cod" ? "border-accent" : "border-border"}`}>
-                {payment === "cod" && <div className="w-2.5 h-2.5 rounded-full bg-accent" />}
+            {/* Cash on Delivery option — hidden for first-time buyers */}
+            {hasOrderHistory ? (
+              <label className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-colors
+                ${payment === "cod" ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"}`}
+              >
+                <input
+                  type="radio"
+                  name="payment"
+                  value="cod"
+                  checked={payment === "cod"}
+                  onChange={() => setPayment("cod")}
+                  className="sr-only"
+                />
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center
+                  ${payment === "cod" ? "border-accent" : "border-border"}`}>
+                  {payment === "cod" && <div className="w-2.5 h-2.5 rounded-full bg-accent" />}
+                </div>
+                <div>
+                  <p className="text-text-primary font-medium">{dict.checkout.cod}</p>
+                  <p className="text-text-muted text-xs">{dict.checkout.codDescription}</p>
+                </div>
+              </label>
+            ) : (
+              <div className="flex items-center gap-4 p-4 rounded-lg border border-border opacity-50">
+                <div className="w-5 h-5 rounded-full border-2 border-border" />
+                <div>
+                  <p className="text-text-muted font-medium">{dict.checkout.cod}</p>
+                  <p className="text-text-muted text-xs">{dict.checkout.codNotAvailable}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-text-primary font-medium">{dict.checkout.cod}</p>
-                <p className="text-text-muted text-xs">{dict.checkout.codDescription}</p>
-              </div>
-            </label>
+            )}
 
             {/* Promo code field */}
             <div className="pt-4 border-t border-border">
@@ -638,8 +886,11 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
                 </button>
               </div>
               <p className="text-text-secondary text-sm">
-                {payment === "card" ? dict.checkout.card : dict.checkout.cod}
+                {payment === "card" ? dict.checkout.card : payment === "kbzpay" ? dict.checkout.kbzpay : dict.checkout.cod}
               </p>
+              {payment === "kbzpay" && paymentProofUrl && (
+                <p className="text-success text-xs mt-1">Payment screenshot uploaded</p>
+              )}
               {promoCode && (
                 <p className="text-accent text-xs mt-1">Promo: {promoCode}</p>
               )}

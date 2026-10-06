@@ -22,8 +22,8 @@ export const deliverySchema = z.object({
 export const orderSchema = z.object({
   contact: contactSchema,
   delivery: deliverySchema,
-  // "card" = Stripe Checkout, "cod" = Cash on Delivery
-  payment_method: z.enum(["card", "cod"]),
+  // "card" = Stripe Checkout, "cod" = Cash on Delivery, "kbzpay" = KBZ Pay QR
+  payment_method: z.enum(["card", "cod", "kbzpay"]),
   items: z
     .array(
       z.object({
@@ -33,6 +33,8 @@ export const orderSchema = z.object({
     )
     .min(1, "Cart cannot be empty"),
   promo_code: z.string().max(50).optional(),
+  // URL of payment proof screenshot (KBZ Pay orders only)
+  payment_proof_url: z.string().url().optional(),
 });
 
 // Newsletter subscription

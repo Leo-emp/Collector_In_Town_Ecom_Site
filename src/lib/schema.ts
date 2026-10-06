@@ -191,8 +191,10 @@ export const orders = sqliteTable("orders", {
   deliveryFee: integer("delivery_fee").notNull(),
   // Optional delivery instructions from customer
   deliveryNotes: text("delivery_notes"),
-  // Payment method — "card" (Stripe) or "cod" (Cash on Delivery)
+  // Payment method — "card" (Stripe), "cod" (Cash on Delivery), or "kbzpay" (KBZ Pay QR)
   paymentMethod: text("payment_method").notNull(),
+  // URL to payment proof screenshot (KBZ Pay orders) — stored in Vercel Blob
+  paymentProofUrl: text("payment_proof_url"),
   // Payment status: pending | paid | failed
   paymentStatus: text("payment_status").notNull().default("pending"),
   // Order fulfillment status: pending | confirmed | done | cancelled

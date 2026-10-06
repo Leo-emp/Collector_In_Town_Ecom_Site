@@ -26,6 +26,7 @@ interface OrderData {
   deliveryFee: number;
   deliveryNotes: string | null;
   paymentMethod: string;
+  paymentProofUrl: string | null;
   paymentStatus: string;
   orderStatus: string;
   discountAmount: number;
@@ -254,6 +255,22 @@ export default function AdminOrderDetailPage({
                 <p className="text-text-primary uppercase">{order.paymentMethod}</p>
               </div>
             </div>
+
+            {/* KBZ Pay payment proof screenshot */}
+            {order.paymentMethod === "kbzpay" && order.paymentProofUrl && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <p className="text-text-muted text-sm mb-2">KBZ Pay Payment Proof</p>
+                <a href={order.paymentProofUrl} target="_blank" rel="noopener noreferrer">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={order.paymentProofUrl}
+                    alt="KBZ Pay payment proof"
+                    className="max-w-sm max-h-64 rounded-lg border border-border object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                  />
+                </a>
+                <p className="text-text-muted text-xs mt-1">Click to view full size</p>
+              </div>
+            )}
           </div>
 
           {/* Delivery address */}

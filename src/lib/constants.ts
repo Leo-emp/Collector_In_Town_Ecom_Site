@@ -16,7 +16,7 @@ export const BRANDS = [
 export const BRAND_SLUGS = BRANDS.map((b) => b.slug);
 
 // Common diecast scales — used in product form dropdown
-export const SCALES = ["1:12", "1:18", "1:24", "1:32", "1:43", "1:64"] as const;
+export const SCALES = ["1:12", "1:18", "1:24", "1:32", "1:43", "1:64", "1:72", "1:87"] as const;
 
 // Catalog pagination — 20 products per page
 export const PRODUCTS_PER_PAGE = 20;

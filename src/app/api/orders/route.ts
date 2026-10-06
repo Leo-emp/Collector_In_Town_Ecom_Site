@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { contact, delivery, items, payment_method, promo_code } = parsed.data;
+  const { contact, delivery, items, payment_method, promo_code, payment_proof_url } = parsed.data;
 
   // ─── Look up delivery zone ────────────────────────────
   const [zone] = await db
@@ -157,6 +157,7 @@ export async function POST(request: Request) {
     deliveryFee,
     deliveryNotes: delivery.notes || null,
     paymentMethod: payment_method,
+    paymentProofUrl: payment_proof_url || null,
     promoCodeId,
     discountAmount,
     subtotal,

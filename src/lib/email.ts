@@ -62,7 +62,7 @@ export async function sendCustomerOrderConfirmation(order: OrderNotification & {
 
           <div style="background: #faf8f5; border-radius: 8px; padding: 16px; margin: 20px 0;">
             <p style="margin: 0 0 4px;"><strong>Order Number:</strong> ${esc(order.orderNumber)}</p>
-            <p style="margin: 0;"><strong>Payment:</strong> ${order.paymentMethod === "cod" ? "Cash on Delivery" : "Card"}</p>
+            <p style="margin: 0;"><strong>Payment:</strong> ${order.paymentMethod === "cod" ? "Cash on Delivery" : order.paymentMethod === "kbzpay" ? "KBZ Pay" : "Card"}</p>
           </div>
 
           <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
@@ -300,7 +300,7 @@ export async function sendAdminOrderNotification(order: OrderNotification) {
         <div style="font-family: sans-serif; max-width: 500px;">
           <h2 style="color: #7a5c1f;">New Order Received</h2>
           <p><strong>Order:</strong> ${esc(order.orderNumber)}</p>
-          <p><strong>Payment:</strong> ${order.paymentMethod === "cod" ? "Cash on Delivery" : "Card"}</p>
+          <p><strong>Payment:</strong> ${order.paymentMethod === "cod" ? "Cash on Delivery" : order.paymentMethod === "kbzpay" ? "KBZ Pay" : "Card"}</p>
           <hr style="border: none; border-top: 1px solid #e5e5e5;" />
           <h3>Customer</h3>
           <p>${esc(order.customerName)}<br/>${esc(order.customerEmail)}<br/>${esc(order.customerPhone)}</p>
