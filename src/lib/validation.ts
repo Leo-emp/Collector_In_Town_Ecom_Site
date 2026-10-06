@@ -33,8 +33,11 @@ export const orderSchema = z.object({
     )
     .min(1, "Cart cannot be empty"),
   promo_code: z.string().max(50).optional(),
-  // URL of payment proof screenshot (KBZ Pay orders only)
-  payment_proof_url: z.string().url().optional(),
+  // URL of payment proof screenshot (KBZ Pay orders only) — must be from Vercel Blob
+  payment_proof_url: z.string().url().refine((u) => {
+    try { const p = new URL(u); return p.protocol === "https:" && p.hostname.endsWith(".public.blob.vercel-storage.com"); }
+    catch { return false; }
+  }, "Invalid payment proof URL").optional(),
 });
 
 // Newsletter subscription

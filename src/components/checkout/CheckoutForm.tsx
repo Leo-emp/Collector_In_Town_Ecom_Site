@@ -123,14 +123,14 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
     fetchData();
   }, [items]);
 
-  // Check order history when session email is available
+  // Check order history — server uses authenticated session, no email param needed
   useEffect(() => {
-    if (!session?.user?.email) return;
-    fetch(`/api/orders/has-history?email=${encodeURIComponent(session.user.email)}`)
+    if (!session?.user) return;
+    fetch("/api/orders/has-history")
       .then((res) => res.json())
       .then((data) => setHasOrderHistory(data.hasHistory))
       .catch(() => {});
-  }, [session?.user?.email]);
+  }, [session?.user]);
 
   // Helper — split comma-separated string into trimmed non-empty values
   const parseTags = (str: string) =>

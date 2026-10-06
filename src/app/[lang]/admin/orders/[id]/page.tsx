@@ -256,8 +256,8 @@ export default function AdminOrderDetailPage({
               </div>
             </div>
 
-            {/* KBZ Pay payment proof screenshot */}
-            {order.paymentMethod === "kbzpay" && order.paymentProofUrl && (
+            {/* KBZ Pay payment proof screenshot — only render if URL is a safe https link */}
+            {order.paymentMethod === "kbzpay" && order.paymentProofUrl && /^https:\/\//.test(order.paymentProofUrl) && (
               <div className="mt-4 pt-4 border-t border-border">
                 <p className="text-text-muted text-sm mb-2">KBZ Pay Payment Proof</p>
                 <a href={order.paymentProofUrl} target="_blank" rel="noopener noreferrer">
