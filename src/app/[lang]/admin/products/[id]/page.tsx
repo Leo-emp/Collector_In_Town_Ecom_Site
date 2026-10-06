@@ -35,7 +35,7 @@ interface PendingFile {
 }
 
 // Empty form for creating a new product
-const DEFAULT_TERMS = "New sealed packing, after opened (No refund, No return)";
+const DEFAULT_TERMS = "New sealed packing, after opened (No refund, No return). Take unboxing video for refund and return purposes. No unboxing video, no aftersale service.";
 
 const EMPTY_FORM = {
   name_en: "",
