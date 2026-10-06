@@ -184,8 +184,8 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
       case "contact":
         return contact.name.trim() && contact.email.trim() && contact.phone.trim();
       case "delivery":
-        // Must have address, selected state, and a matching delivery zone
-        return delivery.address.trim() && delivery.state && matchedZone;
+        // Must have address, state, city, township, and a matching delivery zone
+        return delivery.address.trim() && delivery.state && delivery.city && delivery.township && matchedZone;
       case "payment":
         return true;
       default:
@@ -415,7 +415,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
 
             {/* State / Division dropdown */}
             <div>
-              <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.state || "State / Division"}</label>
+              <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.state || "State / Division"} <span className="text-error">*</span></label>
               <select
                 value={delivery.state}
                 onChange={(e) => setDelivery({ ...delivery, state: e.target.value, city: "", township: "", zone: "" })}
@@ -430,7 +430,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
 
             {/* City dropdown — filtered by selected state */}
             <div>
-              <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.city}</label>
+              <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.city} <span className="text-error">*</span></label>
               <select
                 value={delivery.city}
                 onChange={(e) => setDelivery({ ...delivery, city: e.target.value, township: "", zone: "" })}
@@ -454,7 +454,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
 
             {/* Township dropdown — filtered by selected state + city */}
             <div>
-              <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.township}</label>
+              <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.township} <span className="text-error">*</span></label>
               <select
                 value={delivery.township}
                 onChange={(e) => setDelivery({ ...delivery, township: e.target.value, zone: "" })}
@@ -499,7 +499,7 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
 
             {/* Street address */}
             <div>
-              <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.address}</label>
+              <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.address} <span className="text-error">*</span></label>
               <input
                 type="text"
                 value={delivery.address}
