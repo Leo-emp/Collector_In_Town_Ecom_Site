@@ -242,7 +242,9 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
       case "contact":
         return contact.name.trim() && contact.email.trim() && contact.phone.trim();
       case "delivery":
-        return delivery.address.trim() && delivery.state && delivery.city && delivery.township && matchedZone;
+        // Township is only required if the selected state has townships configured
+        const townshipOk = townshipOptions.length === 0 || delivery.township;
+        return delivery.address.trim() && delivery.state && delivery.city && townshipOk && matchedZone;
       case "payment":
         // KBZ Pay requires uploaded proof screenshot
         if (payment === "kbzpay") return !!paymentProofUrl;
@@ -557,29 +559,22 @@ export function CheckoutForm({ lang, dict }: CheckoutFormProps) {
               </select>
             </div>
 
-            {/* Township dropdown */}
-            <div>
-              <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.township} <span className="text-error">*</span></label>
-              <select
-                value={delivery.township}
-                onChange={(e) => setDelivery({ ...delivery, township: e.target.value, zone: "" })}
-                className={inputClass}
-                disabled={!delivery.state || townshipOptions.length === 0}
-              >
-                {!delivery.state ? (
-                  <option value="">-- Select State first --</option>
-                ) : townshipOptions.length === 0 ? (
-                  <option value="">-- No townships available --</option>
-                ) : (
-                  <>
-                    <option value="">-- Select Township --</option>
-                    {townshipOptions.map((twp) => (
-                      <option key={twp} value={twp}>{twp}</option>
-                    ))}
-                  </>
-                )}
-              </select>
-            </div>
+            {/* Township dropdown — only shown/required when townships exist for this state */}
+            {townshipOptions.length > 0 && (
+              <div>
+                <label className="text-text-secondary text-sm block mb-1.5">{dict.checkout.township} <span className="text-error">*</span></label>
+                <select
+                  value={delivery.township}
+                  onChange={(e) => setDelivery({ ...delivery, township: e.target.value, zone: "" })}
+                  className={inputClass}
+                >
+                  <option value="">-- Select Township --</option>
+                  {townshipOptions.map((twp) => (
+                    <option key={twp} value={twp}>{twp}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Delivery availability feedback */}
             {delivery.state && matchedZone && (
