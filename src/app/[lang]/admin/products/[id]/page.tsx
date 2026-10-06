@@ -252,6 +252,33 @@ export default function AdminProductEditPage({
     });
   };
 
+  // Set an image as the cover (first photo shown on landing page)
+  const handleSetCover = async (imageId: string) => {
+    // Reorder: move selected image to front, keep others in current order
+    const reordered = [
+      imageId,
+      ...images.filter((img) => img.id !== imageId).map((img) => img.id),
+    ];
+    try {
+      const res = await fetch(`/api/admin/products/${id}/images/reorder`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageIds: reordered }),
+      });
+      if (!res.ok) throw new Error("Failed to reorder");
+      // Update local state to reflect new order
+      const sorted = reordered
+        .map((rid, i) => {
+          const img = images.find((im) => im.id === rid);
+          return img ? { ...img, displayOrder: i } : null;
+        })
+        .filter(Boolean) as ProductImage[];
+      setImages(sorted);
+    } catch {
+      setError("Failed to set cover photo");
+    }
+  };
+
   // Handle image deletion (existing uploaded images)
   const handleDeleteImage = async (imageId: string) => {
     try {
@@ -467,13 +494,32 @@ export default function AdminProductEditPage({
           {/* Show uploaded images (existing product) */}
           {images.length > 0 && (
             <div className="grid grid-cols-3 gap-3 mb-4">
-              {images.map((img) => (
-                <div key={img.id} className="relative group rounded-lg overflow-hidden border border-border aspect-square">
+              {images.map((img, idx) => (
+                <div key={img.id} className={`relative group rounded-lg overflow-hidden aspect-square
+                  ${idx === 0 ? "border-2 border-accent" : "border border-border"}`}>
                   <img
                     src={img.url}
                     alt="Product"
                     className="w-full h-full object-cover"
                   />
+                  {/* Cover badge on first image */}
+                  {idx === 0 && (
+                    <div className="absolute top-1 left-1 bg-accent text-background text-[10px] font-bold px-2 py-0.5 rounded">
+                      COVER
+                    </div>
+                  )}
+                  {/* Set as cover button — only on non-cover images */}
+                  {idx !== 0 && (
+                    <button
+                      type="button"
+                      onClick={() => handleSetCover(img.id)}
+                      className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[11px] text-center py-1.5
+                                 cursor-pointer md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                    >
+                      Set as cover
+                    </button>
+                  )}
+                  {/* Delete button */}
                   <button
                     type="button"
                     onClick={() => handleDeleteImage(img.id)}
