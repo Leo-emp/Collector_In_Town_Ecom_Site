@@ -7,7 +7,7 @@ export const BRANDS = [
   { slug: "pop-race", name: "Pop Race", logo: "/images/brands/pop-race.png", blendMode: "none" as const },
   { slug: "tomica", name: "Tomica", logo: "/images/brands/tomica.webp", blendMode: "none" as const },
   { slug: "trends-hobby", name: "Trends Hobby", logo: "/images/brands/trends-hobby.webp", blendMode: "invert" as const },
-  { slug: "tarmac", name: "Tarmac Works", logo: "/images/brands/tarmac.jpg", blendMode: "invert" as const },
+  { slug: "tarmac", name: "Tarmac Works", logo: "/images/brands/tarmac.png", blendMode: "invert" as const },
   { slug: "greenlight", name: "Greenlight", logo: "/images/brands/greenlight.webp", blendMode: "none" as const },
   { slug: "other", name: "Other", logo: null, blendMode: "none" as const },
 ] as const;
