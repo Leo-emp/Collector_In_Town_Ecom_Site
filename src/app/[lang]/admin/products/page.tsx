@@ -7,7 +7,7 @@ import { formatPrice } from "@/lib/format";
 import { db } from "@/lib/drizzle";
 import { products } from "@/lib/schema";
 import { BRANDS } from "@/lib/constants";
-import { desc, eq, count } from "drizzle-orm";
+import { desc, eq, ne, and, count } from "drizzle-orm";
 import { DeleteProductButton } from "@/components/admin/DeleteProductButton";
 
 // Force dynamic rendering — products page queries the database
@@ -31,10 +31,10 @@ export default async function AdminProductsPage({
   // Active brand filter from query param (e.g. ?brand=mini-gt)
   const activeBrand = search.brand || null;
 
-  // Fetch products — filtered by brand if selected, otherwise all
+  // Fetch products — exclude discontinued (soft-deleted), filter by brand if selected
   const allProducts = activeBrand
-    ? await db.select().from(products).where(eq(products.brand, activeBrand)).orderBy(desc(products.createdAt))
-    : await db.select().from(products).orderBy(desc(products.createdAt));
+    ? await db.select().from(products).where(and(ne(products.status, "discontinued"), eq(products.brand, activeBrand))).orderBy(desc(products.createdAt))
+    : await db.select().from(products).where(ne(products.status, "discontinued")).orderBy(desc(products.createdAt));
 
   // Count active and sold_out for the stats bar
   const activeWhere = activeBrand
@@ -47,10 +47,10 @@ export default async function AdminProductsPage({
   const [activeCount] = await db.select({ count: count() }).from(products).where(activeWhere.length > 1 ? eq(products.status, "active") : eq(products.status, "active"));
   const [soldOutCount] = await db.select({ count: count() }).from(products).where(eq(products.status, "sold_out"));
 
-  // Count products per brand for tab badges
+  // Count non-discontinued products per brand for tab badges
   const brandCounts: Record<string, number> = {};
   for (const brand of BRANDS) {
-    const [row] = await db.select({ count: count() }).from(products).where(eq(products.brand, brand.slug));
+    const [row] = await db.select({ count: count() }).from(products).where(and(eq(products.brand, brand.slug), ne(products.status, "discontinued")));
     brandCounts[brand.slug] = row?.count || 0;
   }
   const totalCount = Object.values(brandCounts).reduce((a, b) => a + b, 0);

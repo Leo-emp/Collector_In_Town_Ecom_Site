@@ -21,14 +21,14 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
   // All delivery zones from the API
   const [zones, setZones] = useState<DeliveryZone[]>([]);
   const [editing, setEditing] = useState<string | null>(null);
-  const [editFee, setEditFee] = useState(0);
-  const [editFeePerKg, setEditFeePerKg] = useState(0);
+  const [editFee, setEditFee] = useState<number>(0);
+  const [editFeePerKg, setEditFeePerKg] = useState<number>(0);
   const [editEta, setEditEta] = useState("");
   // Add zone form
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState("");
-  const [newFee, setNewFee] = useState(0);
-  const [newFeePerKg, setNewFeePerKg] = useState(0);
+  const [newFee, setNewFee] = useState<number>(0);
+  const [newFeePerKg, setNewFeePerKg] = useState<number>(0);
   const [newEta, setNewEta] = useState("");
   // UI state
   const [loading, setLoading] = useState(true);
@@ -179,20 +179,23 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
             <div>
               <label className="text-text-muted text-xs block mb-1">Base Fee (MMK)</label>
               <input
-                type="number"
-                value={newFee}
-                onChange={(e) => setNewFee(parseInt(e.target.value) || 0)}
+                type="text"
+                inputMode="numeric"
+                value={newFee || ""}
+                onChange={(e) => setNewFee(parseInt(e.target.value.replace(/\D/g, "")) || 0)}
+                placeholder="e.g. 3000"
                 className="w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent"
               />
             </div>
             <div>
               <label className="text-text-muted text-xs block mb-1">Fee per kg (MMK)</label>
               <input
-                type="number"
-                value={newFeePerKg}
-                onChange={(e) => setNewFeePerKg(parseInt(e.target.value) || 0)}
+                type="text"
+                inputMode="numeric"
+                value={newFeePerKg || ""}
+                onChange={(e) => setNewFeePerKg(parseInt(e.target.value.replace(/\D/g, "")) || 0)}
+                placeholder="e.g. 500"
                 className="w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent"
-                placeholder="0"
               />
             </div>
           </div>
@@ -236,18 +239,20 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
                   <div>
                     <label className="text-text-muted text-xs block mb-1">Base Fee (MMK)</label>
                     <input
-                      type="number"
-                      value={editFee}
-                      onChange={(e) => setEditFee(parseInt(e.target.value) || 0)}
+                      type="text"
+                      inputMode="numeric"
+                      value={editFee || ""}
+                      onChange={(e) => setEditFee(parseInt(e.target.value.replace(/\D/g, "")) || 0)}
                       className="w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent"
                     />
                   </div>
                   <div>
                     <label className="text-text-muted text-xs block mb-1">Per kg (MMK)</label>
                     <input
-                      type="number"
-                      value={editFeePerKg}
-                      onChange={(e) => setEditFeePerKg(parseInt(e.target.value) || 0)}
+                      type="text"
+                      inputMode="numeric"
+                      value={editFeePerKg || ""}
+                      onChange={(e) => setEditFeePerKg(parseInt(e.target.value.replace(/\D/g, "")) || 0)}
                       className="w-full bg-background border border-border rounded-lg px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-accent"
                     />
                   </div>
