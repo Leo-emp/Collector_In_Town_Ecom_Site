@@ -13,8 +13,8 @@ import { products, productImages } from "@/lib/schema";
 import { eq, and, ne, or } from "drizzle-orm";
 import type { Metadata } from "next";
 
-// Force dynamic rendering — product detail queries the database
-export const dynamic = "force-dynamic";
+// Revalidate every 60 seconds — serves cached page, refreshes in background
+export const revalidate = 60;
 
 // Dynamic metadata from real product data
 export async function generateMetadata({

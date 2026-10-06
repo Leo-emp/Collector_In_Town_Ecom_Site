@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 // GET /api/products — public product listing with pagination, brand filter, search, sort
 // Returns active + sold_out products (customers see sold_out but can't buy)

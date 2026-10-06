@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 // GET /api/delivery-zones — public listing of active delivery zones
 // Used by checkout form to show available zones and fees

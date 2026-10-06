@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 // GET /api/products/[slug] — single product with images
 // Public endpoint — used by product detail page

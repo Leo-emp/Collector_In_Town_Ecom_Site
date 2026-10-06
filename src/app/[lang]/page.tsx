@@ -1,7 +1,7 @@
 // Landing page — the main entry point for the site
 // Composes Hero, 3D Showcase (placeholder), New Arrivals, Brand Story, and Brand Logos
-// Force dynamic rendering — NewArrivalsStrip queries the database
-export const dynamic = "force-dynamic";
+// Revalidate every 60 seconds — serves cached page, refreshes in background
+export const revalidate = 60;
 
 import { notFound } from "next/navigation";
 import { getDictionary, hasLocale } from "./dictionaries";

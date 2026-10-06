@@ -14,8 +14,8 @@ import { products, productImages } from "@/lib/schema";
 import { eq, like, desc, asc, and, or, count } from "drizzle-orm";
 import type { Metadata } from "next";
 
-// Force dynamic rendering — catalog queries the database
-export const dynamic = "force-dynamic";
+// Revalidate every 60 seconds — serves cached page, refreshes in background
+export const revalidate = 60;
 
 // Valid catalog slugs: brand slugs + "new-arrivals"
 const VALID_SLUGS = [...BRAND_SLUGS, "new-arrivals"];
