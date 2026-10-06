@@ -21,6 +21,7 @@ const BRAND_NAV_KEYS: Record<string, keyof Dictionary["nav"]> = {
   inno64: "inno64",
   "pop-race": "popRace",
   tomica: "tomica",
+  "trends-hobby": "trendsHobby",
   other: "other",
 };
 

@@ -6,6 +6,7 @@ export const BRANDS = [
   { slug: "inno64", name: "Inno64", logo: "/images/brands/inno64.svg", blendMode: "none" as const },
   { slug: "pop-race", name: "Pop Race", logo: "/images/brands/pop-race.png", blendMode: "none" as const },
   { slug: "tomica", name: "Tomica", logo: "/images/brands/tomica.webp", blendMode: "none" as const },
+  { slug: "trends-hobby", name: "Trends Hobby", logo: "/images/brands/trends-hobby.webp", blendMode: "invert" as const },
   { slug: "other", name: "Other", logo: null, blendMode: "none" as const },
 ] as const;
 

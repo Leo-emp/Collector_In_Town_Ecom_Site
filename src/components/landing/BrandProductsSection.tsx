@@ -105,7 +105,8 @@ export async function BrandProductsSection({ lang, brandSlug, brandName, brandLo
                   ${brandSlug === "inno64" ? "h-8 sm:h-10 w-auto" : ""}
                   ${brandSlug === "pop-race" ? "h-8 sm:h-11" : ""}
                   ${brandSlug === "tomica" ? "h-10 sm:h-14" : ""}
-                  ${!["hot-wheels","mini-gt","inno64","pop-race","tomica"].includes(brandSlug) ? "h-8 sm:h-12" : ""}
+                  ${brandSlug === "trends-hobby" ? "h-10 sm:h-14" : ""}
+                  ${!["hot-wheels","mini-gt","inno64","pop-race","tomica","trends-hobby"].includes(brandSlug) ? "h-8 sm:h-12" : ""}
                 `}
               />
             )}

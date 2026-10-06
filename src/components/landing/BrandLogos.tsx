@@ -27,7 +27,7 @@ export function BrandLogos({ lang, dict }: BrandLogosProps) {
         <div className={`w-12 h-px mx-auto mb-12 ${isDark ? "bg-[#c9a84c]/40" : "bg-[#7a5c1f]/40"}`} />
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-          {BRANDS.filter((brand) => brand.slug !== "other").map((brand) => (
+          {BRANDS.filter((brand) => brand.slug !== "other" && brand.slug !== "special-items" && brand.logo).map((brand) => (
             <Link
               key={brand.slug}
               href={`/${lang}/products/${brand.slug}`}
@@ -46,6 +46,7 @@ export function BrandLogos({ lang, dict }: BrandLogosProps) {
                              opacity-80 group-hover:opacity-100 transition-all duration-300
                              ${brand.blendMode === "invert" && isDark ? "invert" : ""}
                              ${brand.slug === "inno64" && !isDark ? "invert" : ""}
+                             ${brand.slug === "trends-hobby" && !isDark ? "invert" : ""}
                              ${brand.slug === "hot-wheels" ? "max-h-32 sm:max-h-40 scale-110" : ""}
                              ${brand.slug === "pop-race" ? "max-h-16 sm:max-h-20" : ""}
                              ${brand.slug !== "hot-wheels" && brand.slug !== "pop-race" ? "max-h-24 sm:max-h-32" : ""}`}
