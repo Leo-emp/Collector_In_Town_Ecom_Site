@@ -55,3 +55,31 @@ export async function PUT(
 
   return NextResponse.json({ zone: updated });
 }
+
+// DELETE /api/admin/delivery-zones/[id] — permanently remove a delivery zone
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  // Verify admin session cookie
+  if (!(await verifyAdminSession())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+
+  // Check zone exists before deleting
+  const [zone] = await db
+    .select()
+    .from(deliveryZones)
+    .where(eq(deliveryZones.id, id));
+
+  if (!zone) {
+    return NextResponse.json({ error: "Zone not found" }, { status: 404 });
+  }
+
+  // Delete the delivery zone
+  await db.delete(deliveryZones).where(eq(deliveryZones.id, id));
+
+  return NextResponse.json({ success: true });
+}

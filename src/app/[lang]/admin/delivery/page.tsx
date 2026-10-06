@@ -115,6 +115,22 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
     }
   };
 
+  // Delete a zone permanently via DELETE
+  const handleDelete = async (zone: DeliveryZone) => {
+    // Confirm before deleting
+    if (!confirm(`Delete "${zone.nameEn}"? This cannot be undone.`)) return;
+    setError("");
+    try {
+      const res = await fetch(`/api/admin/delivery-zones/${zone.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete");
+      await loadZones();
+    } catch {
+      setError("Failed to delete zone");
+    }
+  };
+
   const toggleActive = async (zone: DeliveryZone) => {
     try {
       const res = await fetch(`/api/admin/delivery-zones/${zone.id}`, {
@@ -299,12 +315,20 @@ export default function AdminDeliveryPage({ params }: { params: Promise<{ lang: 
                   <span className="text-text-muted">Estimated Delivery</span>
                   <span className="text-text-primary">{zone.estimatedTime || "—"}</span>
                 </div>
-                <button
-                  onClick={() => startEdit(zone)}
-                  className="text-accent text-sm hover:underline"
-                >
-                  Edit Zone
-                </button>
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => startEdit(zone)}
+                    className="text-accent text-sm hover:underline"
+                  >
+                    Edit Zone
+                  </button>
+                  <button
+                    onClick={() => handleDelete(zone)}
+                    className="text-error text-sm hover:underline"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             )}
           </div>
